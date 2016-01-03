@@ -1,0 +1,90 @@
+{
+  "modules" : {
+    "core" : {
+      "base" : [
+        "Const.js",
+        "Class.js",
+        "Flax.js",
+        "Stats.js",
+        "core/utils/Util.js",
+        "core/utils/Geom.js",
+        "core/utils/Math.js",
+        "core/utils/Point.js",
+        "core/utils/Rect.js",
+        "core/utils/Path.js",
+        "core/signal/SignalBinding.js",
+        "core/signal/Signal.js",
+        "core/signal/wrapper.js",
+        "core/Modular.js"
+      ],
+      "common" : [
+        "core/AssetsManager.js",
+        "core/ObjectPool.js",
+        "core/FlaxSprite.js",
+        "core/Animator.js",
+        "core/MovieClip.js",
+        "core/BitmapLabel.js",
+        "core/Button.js"
+      ],
+      "pixi_base" : [
+        "libs/pixi-skew.js",
+        "core/pixi/modules/CocosLike.js",
+        "core/pixi/modules/Action.js",
+        "core/pixi/modules/Schedule.js",
+        "core/pixi/FrameCache.js",
+        "core/pixi/Loader.js",
+        "core/pixi/Scheduler.js",
+        "core/pixi/Sprite.js",
+        "core/pixi/TextInput.js"
+      ],
+      "pixi" : [
+        "core/pixi/Image.js",
+        "core/pixi/ProgressBar.js",
+        "core/pixi/LabelFactory.js"
+      ],
+      "cocos" : [
+        "core/cocos/Image.js",
+        "core/cocos/ProgressBar.js",
+        "core/cocos/LabelFactory.js"
+      ]
+    },
+    "game" : {
+      "common" : [
+        "game/Preloader.js",
+        "game/SceneManager.js",
+        "game/UserData.js",
+        "game/Language.js",
+        "game/Device.js",
+        "game/SoundButton.js"
+      ],
+      "pixi" : [
+        "libs/howler.js",
+        "game/pixi/InputManager.js",
+        "game/pixi/Director.js",
+        "game/pixi/System.js",
+        "game/pixi/ViewPort.js",
+        "game/pixi/TilingSprite.js",
+        "game/pixi/Sound.js",
+        "game/pixi/DebugDraw.js"
+      ],
+      "cocos" : [
+        "game/cocos/InputManager.js",
+        "game/cocos/Sound.js",
+        "game/cocos/DebugDraw.js"
+      ]
+    },
+    "modules" : {
+      "common" : [
+        "modules/ScreenLayout.js",
+        "modules/Collider.js",
+        "modules/Move.js"
+      ]
+    },
+    "extras" : {
+      "common" : [
+        "utils/Color.js",
+        "utils/String.js"
+      ]
+    }
+  }
+}
