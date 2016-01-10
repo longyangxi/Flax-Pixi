@@ -318,8 +318,11 @@ flax.InputManager = cc.Node.extend({
         event.currentTarget = target;
         event.target = this._findRealTarget(target, pos) || target;
         //if currentTarget is cc.Layer or flax.MovieClip and hasn't touch any of it's child, then ignore!
-        if((target instanceof cc.Layer || target instanceof flax.MovieClip) && event.target == target) {
-            return false;
+        //todo
+        //if((target instanceof cc.Layer || target instanceof flax.MovieClip) && event.target == target) {
+        if((target instanceof cc.Layer) && event.target == target) {
+                return false;
+            }
         }
         this._dispatch(target, touch, event, InputType.press);
         return true;
