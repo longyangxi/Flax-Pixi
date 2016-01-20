@@ -129,7 +129,7 @@ flax._movieClip = {
     /**
      * Replace a child with name of childName by an asset of assetID in assetsFile
      * @param {String} childName the child to be replaced
-     * @param {String} assetID the new assetID
+     * @param {String|Display} assetID the new assetID or a DisplayObject
      * @param {String} assetsFile the new asset's assetsFile, if null, use this.assetsFile
      * */
     replaceChild:function(childName, assetID, assetsFile)
@@ -143,17 +143,22 @@ flax._movieClip = {
         if(child)
         {
             if(!assetsFile) assetsFile = this.assetsFile;
-            var assetType = flax.assetsManager.getAssetType(assetsFile, assetID);
-            if(!assetType){
-                //flax.log("***There is no display with assetID: " + assetID + " in assets: " + assetsFile);
-                return false;
+            var isDisplay = flax.isDisplay(assetID);
+            if(!isDisplay) {
+                var assetType = flax.assetsManager.getAssetType(assetsFile, assetID);
+                if(!assetType){
+                    //flax.log("***There is no display with assetID: " + assetID + " in assets: " + assetsFile);
+                    return false;
+                }
             }
-            if(flax.assetsManager.getAssetType(child.assetsFile, child.assetID) == assetType){
+
+            if(!isDisplay && flax.assetsManager.getAssetType(child.assetsFile, child.assetID) == assetType){
                 child.setSource(assetsFile, assetID);
             } else {
                 var autoPlay = child._autoPlayChildren;
                 child.destroy();
-                child = flax.assetsManager.createDisplay(assetsFile, assetID, {name: childName}, this.createChildFromPool);
+                child = isDisplay ? assetID : flax.assetsManager.createDisplay(assetsFile, assetID, null, this.createChildFromPool);
+                child.name = childName;
                 this.namedChildren[childName] = child;
                 if(child.__isMovieClip === true && !autoPlay) child.autoPlayChildren = this._autoPlayChildren;
                 if(this._autoPlayChildren && child.__isFlaxSprite === true) {

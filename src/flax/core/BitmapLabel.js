@@ -206,7 +206,7 @@ flax.BitmapLabel = _superCls.extend({
         } else {
             if(this._fontDefine['labels']){
                 var label = this._fontDefine['labels'][ch];
-                charIndex = label.start;
+                if(label) charIndex = label.start;
             }
             if(charIndex == -1 && !isNaN(parseInt(ch))) {
                 charIndex = parseInt(ch);

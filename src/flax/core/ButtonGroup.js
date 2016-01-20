@@ -18,8 +18,10 @@ flax.ButtonGroup = flax.Class.extend({
         }
         for(var i = 0; i < buttons.length; i++){
             var btn = buttons[i];
-            if(!flax.isButton(btn)) continue;
-            if(this.buttons.indexOf(btn) > -1) continue;
+            if(!flax.isButton(btn)) {
+                throw "The element added to a ButtonGroup must be a flax button!"
+                continue;
+            }            if(this.buttons.indexOf(btn) > -1) continue;
             this.buttons.push(btn);
             btn.group = this;
         }

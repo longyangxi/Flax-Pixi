@@ -509,7 +509,7 @@ flax._sprite = {
                 this.currentFrame = this._loopStart;
             }
         }else{
-            this.gotoAndPlay(anim);
+            this.gotoAndPlay(anim, true);
         }
     },
     isValideFrame:function(frame)
