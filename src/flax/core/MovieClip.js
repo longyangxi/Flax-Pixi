@@ -517,6 +517,8 @@ flax._movieClip = {
     onRecycle:function()
     {
         this._super();
+        this.sameFpsForChildren = true;
+        this.createChildFromPool = true;
         this._autoPlayChildren = false;
         if(RESET_FRAME_ON_RECYCLE){
             for(var key in this.namedChildren) {
@@ -526,6 +528,15 @@ flax._movieClip = {
                 }
             }
         }
+    },
+    onExit: function () {
+        this._super();
+        for(var childName in this.namedChildren){
+            delete this.namedChildren[childName];
+            delete this[childName];
+        }
+        //todo
+        //this._childrenDefine = null;
     }
 };
 
