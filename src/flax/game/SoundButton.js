@@ -7,7 +7,6 @@ flax._soundButton = {
     {
         this._super();
         this.setState(flax.getSoundEnabled() ? ButtonState.UP : ButtonState.SELECTED);
-        this.debugDraw();
     },
     _onClick:function(touch, event)
     {
