@@ -324,7 +324,6 @@ flax.InputManager = cc.Node.extend({
         //if((target instanceof cc.Layer || target instanceof flax.MovieClip) && event.target == target) {
         if((target instanceof cc.Layer) && event.target == target) {
                 return false;
-            }
         }
         this._dispatch(target, touch, event, InputType.press);
         return true;
