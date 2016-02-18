@@ -22,8 +22,15 @@ flax.Collider = flax.Class.extend({
     _rotation:0,
     _localRect:null,
     _polygons:null,
+    _originData:null,
+    _centerAnchor:false,
+    _clickArea:null,
     _debugNode:null,
     ctor:function(data, centerAnchor){
+
+        this._originData = data;
+        this._centerAnchor = centerAnchor;
+
         data = data.split(",");
         this.type = data[0];
         this._center = flax.p(parseFloat(data[1]), parseFloat(data[2]));
@@ -45,6 +52,9 @@ flax.Collider = flax.Class.extend({
             this._center.y += this._height/2;
         }
         this._localRect = flax.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
+    },
+    clone: function () {
+        return new flax.Collider(this._originData, this._centerAnchor)
     },
     setOwner:function(owner)
     {
@@ -70,6 +80,9 @@ flax.Collider = flax.Class.extend({
         return this.containsPoint(pos);
     },
     containsPoint:function(pos){
+        if(this._clickArea) {
+            return flax.rectContainsPoint(this._clickArea, pos);
+        }
         pos = this.owner.convertToNodeSpace(pos);
         if(this.type == flax.ColliderType.rect){
             return flax.rectContainsPoint(this._localRect, pos);
@@ -291,6 +304,9 @@ flax.Module.Collider = {
     },
     "onExit": function () {
 
+    },
+    setClickArea: function (rect) {
+        if(this._mainCollider) this._mainCollider._clickArea = rect;
     },
     mainCollider:{
         get: function () {
