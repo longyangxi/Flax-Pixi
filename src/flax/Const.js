@@ -25,3 +25,4 @@ IMAGE_TYPES = [".png", ".jpg", ".bmp",".jpeg",".gif"];
 SOUND_TYPES = [".mp3", ".ogg", ".wav", ".mp4", ".m4a"];
 
 DATA_FORMAT = FRAMEWORK == "cocos" ? ".plist" : ".json";
+Y_DIRECTION = FRAMEWORK == "cocos" ? -1 : 1;
