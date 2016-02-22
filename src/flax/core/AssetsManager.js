@@ -156,15 +156,59 @@ flax.AssetsManager = flax.Class.extend({
         var parent = params.parent;
         delete params.parent;
         if(fromPool === true) {
-            mc = flax.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, parent, params);
+            mc = flax.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, null, params);
+            var view = mc.getCollider ? mc.getCollider("mask") : null;
+            if(view) {
+                this._createMask(mc, view, parent, params);
+            } else if(parent) {
+                parent.addChild(mc);
+            }
         }else{
             if(mcCls.create) mc = mcCls.create(assetsFile, assetID);
             else mc = new mcCls(assetsFile, assetID);
             flax.copyProperties(params, mc);
+
+            var view = mc.getCollider ? mc.getCollider("mask") : null;
+            if(view) {
+                this._createMask(mc, view, parent, params);
+                mc.clsName = clsName;
+                return mc;
+            }
+
             if(parent) parent.addChild(mc);
             mc.clsName = clsName;
         }
         return mc;
+    },
+    _createMask: function (mc, view, parent, params) {
+
+        var viewRect = view.getRect(false);
+
+        //todo, mask的时候看不见区域也会点击生效,做下判断,如果mask区域外点击不会触发
+        //todo, 根据任意形状画出来,然后做遮罩,在createDisplay的时候就做
+        //todo, pixi的做法
+
+        var stencil = new cc.DrawNode();
+        var color = cc.color(255, 0, 0, 255);
+        var rect = flax.rect(0, 0, viewRect.width, viewRect.height);
+        stencil.drawRect(flax.p(rect.x, rect.y), flax.p(rect.width, rect.height), color);
+        stencil.__originPos = flax.p(viewRect.x, viewRect.y);
+        stencil.setPosition(stencil.__originPos);
+        stencil.setContentSize(rect.width, rect.height);
+
+
+        var clipper = new cc.ClippingNode();
+
+        clipper.setContentSize(mc.getContentSize());
+
+        flax.copyProperties(params, clipper);
+
+        clipper.stencil = stencil;
+        if(parent) parent.addChild(clipper);
+
+        mc.mask = clipper;
+
+        clipper.addChild(mc);
     },
     /**
      * Clone a new display from the target, if fromPool = true, it'll be fetched from the pool

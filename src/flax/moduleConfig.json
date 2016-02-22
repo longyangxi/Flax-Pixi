@@ -24,7 +24,8 @@
         "core/Animator.js",
         "core/MovieClip.js",
         "core/BitmapLabel.js",
-        "core/Button.js"
+        "core/Button.js",
+        "core/ListView.js"
       ],
       "pixi_base" : [
         "libs/pixi-skew.js",
@@ -77,7 +78,8 @@
       "common" : [
         "modules/ScreenLayout.js",
         "modules/Collider.js",
-        "modules/Move.js"
+        "modules/Move.js",
+        "modules/Draggable.js"
       ]
     },
     "extras" : {

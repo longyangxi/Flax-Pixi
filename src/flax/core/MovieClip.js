@@ -358,12 +358,22 @@ flax._movieClip = {
                 if(this.sameFpsForChildren) child.fps = this.fps;
                 //To fix the zIndex bug when use the old version tool
                 var zIndex = (frameData.zIndex == -1) ? childDefine['zIndex'] : frameData.zIndex;
-                if(child.parent != this){
-                    child.removeFromParent(false);
-                    if(FRAMEWORK == "cocos") this.addChild(child, zIndex);
-                    else this.addChildAt(child, zIndex);
-                }else if(child.zIndex != zIndex) {
-                    child.zIndex = zIndex;
+
+                if(child.mask && FRAMEWORK == "cocos") {
+                    if(child.mask.parent != this){
+                        child.mask.removeFromParent(false);
+                        this.addChild(child.mask, zIndex);
+                    }else if(child.mask.zIndex != zIndex) {
+                        child.mask.zIndex = zIndex;
+                    }
+                } else {
+                    if(child.parent != this){
+                        child.removeFromParent(false);
+                        if(FRAMEWORK == "cocos") this.addChild(child, zIndex);
+                        else this.addChildAt(child, zIndex);
+                    }else if(child.zIndex != zIndex) {
+                        child.zIndex = zIndex;
+                    }
                 }
             }else if(child) {
                 if(child.destroy) child.destroy();

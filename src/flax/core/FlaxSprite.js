@@ -588,6 +588,14 @@ flax._sprite = {
             this.release();
         }
         this.renderFrame(this.currentFrame, true);
+
+        if(this.mask && !this.mask.__inited) {
+            this.mask.__inited = true;
+            var ap = this.getAnchorPointInPoints();
+            var stencil = this.mask.stencil;
+            stencil.x = stencil.__originPos.x + this.x - ap.x;
+            stencil.y = stencil.__originPos.y + this.y - ap.y;
+        }
     },
     onExit:function()
     {
@@ -651,6 +659,12 @@ flax._sprite = {
     },
     setPositionY:function (y) {
         this.setPosition(this.getPositionX(), y);
+    },
+    setLocalZOrder: function (zIndex) {
+        cc.Node.prototype.setLocalZOrder.call(this, zIndex);
+        if(this.mask) {
+            this.mask.setLocalZOrder(zIndex);
+        }
     },
     _destroyed:false,
     destroy:function()
