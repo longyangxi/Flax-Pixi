@@ -69,6 +69,9 @@ flax.Module.Draggable = {
         var deltaX = newPos.x - this._lastPos.x;
         var deltaY = newPos.y - this._lastPos.y;
 
+        deltaX = (deltaX > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaX));
+        deltaY = (deltaY > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaY));
+
         this.dragBy(deltaX, deltaY);
 
         this._lastPos = newPos;

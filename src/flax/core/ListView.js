@@ -15,7 +15,6 @@ flax.ListView = flax.MovieClip.extend({
     _totalSize:0,
     _visibleSize:0,
     _originPos:0,
-    _origingSize:0,
     _viewAnchorX:0,
     _viewAnchorY:0,
     _currentPos:0,
@@ -63,7 +62,7 @@ flax.ListView = flax.MovieClip.extend({
         this.scheduleOnce(function () {
             var rect = this.getCollider("mask").getRect(true);
             this._visibleSize = this._yDirection ? rect.height : rect.width;
-            this.setClickArea(rect)
+            this.setClickArea(rect);
         }, 0.01);
     },
     onExit: function () {
@@ -157,7 +156,7 @@ flax.ListView = flax.MovieClip.extend({
             index = Math.min(this.viewArray.length - 1, index);
             var item = this.viewArray[index];
             pos = this._yDirection ? item.y : item.x;
-            if(FRAMEWORK == "cocos" && this._yDirection) pos = pos - this._origingSize;
+            if(FRAMEWORK == "cocos" && this._yDirection) pos = pos - this._originSize;
         }
         this.scrollToPosition(pos, speed);
     },
@@ -211,9 +210,9 @@ flax.ListView = flax.MovieClip.extend({
         if(this.dataArray) {
 
             //auto fill the blank area
-            if(this._origingSize < this._visibleSize + this._itemSize + this.gap) {
+            if(this._originSize < this._visibleSize + this._itemSize + this.gap) {
                 this._fillTheBlank();
-                this._origingSize += this._itemSize + this.gap;
+                this._originSize += this._itemSize + this.gap;
                 this._totalSize += this._itemSize + this.gap;
             }
 

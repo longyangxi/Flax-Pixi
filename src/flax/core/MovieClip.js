@@ -118,7 +118,7 @@ flax.FrameData = flax.Class.extend({
 flax._movieClip = {
     clsName:"flax.MovieClip",
     sameFpsForChildren:true,//all children use the same fps with this
-    createChildFromPool:true,
+    createChildFromPool:false,//todo
     _autoPlayChildren:false,//auto play children when play
     namedChildren:null,
     _childrenDefine: null,
