@@ -26,6 +26,7 @@ flax._image = {
             this._super();
             var batch = new cc.SpriteBatchNode(this._imgFile);
             this.updateWithBatchNode(batch, flax.rect(), false, this.define['scale9']);
+            this.clsName = "flax.Scale9Image";
         }
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
         this.__instanceId = flax.getInstanceId();
@@ -38,17 +39,25 @@ flax._image = {
      * */
     setSource:function(assetsFile, assetID)
     {
-        if(assetsFile == null || assetID == null){
-            throw 'assetsFile and assetID can not be null!';
+        if(assetsFile == null){
+            throw 'assetsFile can not be null!';
             return;
         }
+
         if(this.assetsFile == assetsFile && this.assetID == assetID) return;
+
         this.assetsFile = assetsFile;
         this.assetID = assetID;
-        this.define = flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
-        //get the resource folder
-        this._imgFile = this.define['url'];
-        if(flax.Scale9Image && this instanceof flax.Scale9Image) {
+
+        if(this.assetID) {
+            this.define = flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
+            //get the resource folder
+            this._imgFile = this.define['url'];
+        } else {
+            this._imgFile = this.assetsFile;
+        }
+
+        if(this.define && flax.Scale9Image && this instanceof flax.Scale9Image) {
             this.initWithFile(this._imgFile, flax.rect(), this.define['scale9']);
             //todo, assume the images has been loaded
             //this.onImgLoaded();
@@ -58,14 +67,18 @@ flax._image = {
         } else {
             this.initWithFile(this._imgFile);
         }
-        //set the anchor
-        var anchorX = this.define['anchorX'];
-        var anchorY = this.define['anchorY'];
-        if(!isNaN(anchorX) && !isNaN(anchorY)) {
-            this.setAnchorPoint(anchorX, anchorY);
+
+        if(this.define) {
+            //set the anchor
+            var anchorX = this.define['anchorX'];
+            var anchorY = this.define['anchorY'];
+            if(!isNaN(anchorX) && !isNaN(anchorY)) {
+                this.setAnchorPoint(anchorX, anchorY);
+            }
         }
+
         this.onInit();
-        if(this.__pool__id__ == null) this.__pool__id__ = this.assetID;
+        if(this.__pool__id__ == null) this.__pool__id__ = this.assetID || this.assetsFile;
     },
     onImgLoaded:function()
     {

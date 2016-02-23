@@ -5,7 +5,6 @@
         "Const.js",
         "Class.js",
         "Flax.js",
-        "Stats.js",
         "core/utils/Util.js",
         "core/utils/Geom.js",
         "core/utils/Math.js",
@@ -15,7 +14,8 @@
         "core/signal/SignalBinding.js",
         "core/signal/Signal.js",
         "core/signal/wrapper.js",
-        "core/Modular.js"
+        "core/Modular.js",
+        "modules/Draggable.js"
       ],
       "common" : [
         "core/AssetsManager.js",
@@ -25,9 +25,11 @@
         "core/MovieClip.js",
         "core/BitmapLabel.js",
         "core/Button.js",
+        "core/ButtonGroup",
         "core/ListView.js"
       ],
       "pixi_base" : [
+        "Stats.js",
         "libs/pixi-skew.js",
         "core/pixi/modules/CocosLike.js",
         "core/pixi/modules/Action.js",
@@ -78,8 +80,7 @@
       "common" : [
         "modules/ScreenLayout.js",
         "modules/Collider.js",
-        "modules/Move.js",
-        "modules/Draggable.js"
+        "modules/Move.js"
       ]
     },
     "extras" : {

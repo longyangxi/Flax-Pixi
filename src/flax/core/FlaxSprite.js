@@ -651,6 +651,7 @@ flax._sprite = {
             dirty = (pos != _x || yValue != _y);
             if(dirty) this._super(pos, yValue);
         }
+        this.onNewPosition();
         if(!dirty || !this.parent) return;
         flax.callModuleFunction(this, "onPosition");
     },
@@ -659,6 +660,9 @@ flax._sprite = {
     },
     setPositionY:function (y) {
         this.setPosition(this.getPositionX(), y);
+    },
+    onNewPosition: function () {
+
     },
     setLocalZOrder: function (zIndex) {
         cc.Node.prototype.setLocalZOrder.call(this, zIndex);

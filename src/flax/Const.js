@@ -1,7 +1,7 @@
 /**
  * Created by long on 15/10/7.
  */
-
+FRAMEWORK = "cocos";
 VERSION = 2.5;
 MIN_TOOL_VERSION = 2.0;
 /**

@@ -330,6 +330,7 @@ flax._movieClip = {
         for(var i = 0;  i < count; i++) {
             var d = frames[i];
             if(d == null) {
+                continue;
                 throw "Please check if there are duplicated children names in this MovieClip when export from flash with flax tool!";
             }
             var childName = d.name;
