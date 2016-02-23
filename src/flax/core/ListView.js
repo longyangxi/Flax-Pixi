@@ -155,8 +155,7 @@ flax.ListView = flax.MovieClip.extend({
         if(!this.dataArray) {
             index = Math.min(this.viewArray.length - 1, index);
             var item = this.viewArray[index];
-            pos = this._yDirection ? item.y : item.x;
-            if(FRAMEWORK == "cocos" && this._yDirection) pos = pos - this._originSize;
+            pos = this.gap + (this._yDirection ? item.y : item.x);
         }
         this.scrollToPosition(pos, speed);
     },
