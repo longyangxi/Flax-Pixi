@@ -34,6 +34,9 @@ flax.TileMap = cc.Node.extend({
     onExit: function () {
         this._super();
         this.release();
+        this._gridCanvas = null;
+        this._objectsMap = null;
+        this._objectsArr = null;
     },
     init:function(tileWidth, tileHeight, mapWidth, mapHeight, inPixel)
     {
@@ -717,7 +720,7 @@ flax.Module.TileMap = {
     },
     "onExit":function()
     {
-        if(this._tileMap) this._tileMap.removeObject(this);
+        if(this._tileMap && this._tileMap.running) this._tileMap.removeObject(this);
         this._tileMap = null;
         this._tileInited = false;
     },

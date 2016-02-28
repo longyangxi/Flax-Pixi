@@ -19,13 +19,7 @@ flax._image = {
     ctor:function(assetsFile, assetID) {
         if(this instanceof flax.Sprite) flax.Sprite.prototype.ctor.call(this);
         else {
-            //todo, use texture as scale9
-            this.define = flax.assetsManager.getDisplayDefine(assetsFile, assetID);
-            //get the resource folder
-            this._imgFile = this.define['url'];
             this._super();
-            var batch = new cc.SpriteBatchNode(this._imgFile);
-            this.updateWithBatchNode(batch, flax.rect(), false, this.define['scale9']);
             this.clsName = "flax.Scale9Image";
         }
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
@@ -49,6 +43,7 @@ flax._image = {
         this.assetsFile = assetsFile;
         this.assetID = assetID;
 
+        //todo, use texture as scale9
         if(this.assetID) {
             this.define = flax.assetsManager.getDisplayDefine(this.assetsFile, this.assetID);
             //get the resource folder
@@ -59,11 +54,8 @@ flax._image = {
 
         if(this.define && flax.Scale9Image && this instanceof flax.Scale9Image) {
             this.initWithFile(this._imgFile, flax.rect(), this.define['scale9']);
-            //todo, assume the images has been loaded
-            //this.onImgLoaded();
             if(flax.sys.isNative) this.onImgLoaded();
             else this.addEventListener("load", this.onImgLoaded, this);
-            //this.onImgLoaded();
         } else {
             this.initWithFile(this._imgFile);
         }
@@ -88,7 +80,6 @@ flax._image = {
         this.scheduleOnce(function(){
             this._updateSize(this._sx, this._sy);
         },0.01);
-        //this._updateSize(this._sx, this._sy);
     },
     destroy:function()
     {
@@ -122,11 +113,12 @@ flax._image = {
             delete  node.__anchor__;
         }
         this._anchorBindings.length = 0;
+        this.define = null;
     },
     /**
      * Do some thins when the object recycled by the pool
      * */
-    onRecycle:function()
+    reset:function()
     {
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;

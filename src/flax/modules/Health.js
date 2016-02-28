@@ -16,6 +16,7 @@ flax.Module.Health = {
         this.dead = false;
     },
     "onExit":function(){
+        this.ownerBody = null;
     },
     "onHit":function(bullet)
     {

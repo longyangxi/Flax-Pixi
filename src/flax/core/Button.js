@@ -40,7 +40,7 @@ flax._buttonDefine = {
         this._removeListeners();
         this._super();
     },
-    onRecycle:function(){
+    reset:function(){
         this._super();
         this._playChildrenOnState = false;
         this._state = null;

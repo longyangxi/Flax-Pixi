@@ -28,6 +28,9 @@ flax.Module.Move = {
         this.restrainRect = null;
         this.inRandom = false;
         this._inMoving = false;
+        this._targetPos = null;
+        this._callBack = null;
+        this._callContext = null;
     },
     /**
      * Move to a new position within duration time

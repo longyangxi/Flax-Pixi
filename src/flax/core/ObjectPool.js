@@ -37,6 +37,7 @@ flax.ObjectPool = flax.Class.extend({
         if(this._pool.length > 0){
             obj = this._pool.shift();
             obj.__fromPool = true;
+            obj.reset && obj.reset();
             obj.setSource(this._assetsFile, assetID);
         }else{
             if(this._cls.create) obj = this._cls.create(this._assetsFile, assetID);
@@ -68,8 +69,8 @@ flax.ObjectPool = flax.Class.extend({
         }
         if(this._pool.length < this.maxCount){
 //            flax.log("recycle: "+object.assetID);
-            object.onRecycle&&object.onRecycle();
-            object.retain&&object.retain();
+//            object.onRecycle&&object.onRecycle();
+            object.retain && object.retain();
             this._pool.push(object);
         }
     },
@@ -77,7 +78,7 @@ flax.ObjectPool = flax.Class.extend({
     {
         var i = this._pool.length;
         while(i--){
-            this._pool[i].release&&this._pool[i].release();
+            this._pool[i].release && this._pool[i].release();
         }
         this._pool.length = 0;
     }

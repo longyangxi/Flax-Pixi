@@ -16,6 +16,13 @@ flax.ProgressBar = flax.Animator.extend({
     {
         this._super();
     },
+    onExit: function () {
+        this._super();
+        this.pBar = null;
+        this._type = flax.ProgressBarType.HORIZONTAL;
+        this._reversed = false;
+        this._tween = null;
+    },
     getPercentage:function()
     {
         if(this.pBar) return this.pBar.percentage;

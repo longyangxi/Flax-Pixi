@@ -20,6 +20,9 @@ flax.ListView = flax.MovieClip.extend({
     _currentPos:0,
     _currentIndex:-1,
     _percentage:0,
+    _scrollSpeed:0,
+    _targetPos:0,
+    _scrollDirect:0,
 
     onEnter: function () {
 
@@ -69,10 +72,15 @@ flax.ListView = flax.MovieClip.extend({
         this._super();
         this.dataArray = null;
         this.viewArray = null;
+    },
+    reset: function () {
+        this._super();
         this._yDirection = true;
         this._itemSize = 0;
         this.gap = null;
         this._currentIndex = -1;
+        this._currentPos = 0;
+        this.margin = 0;
     },
     refresh: function () {
         this._currentIndex = -1;
@@ -159,9 +167,6 @@ flax.ListView = flax.MovieClip.extend({
         }
         this.scrollToPosition(pos, speed);
     },
-    _scrollSpeed:0,
-    _targetPos:0,
-    _scrollDirect:0,
     scrollToPosition: function (pos, speed) {
         this.dragEnabled = false;
         this._targetPos = this._originPos + pos;

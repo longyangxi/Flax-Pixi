@@ -53,6 +53,12 @@ flax.Collider = flax.Class.extend({
         }
         this._localRect = flax.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
     },
+    destroy: function () {
+        this.owner = null;
+        this._polygons = null;
+        this._originData = null;
+        this._debugNode = null;
+    },
     clone: function () {
         return new flax.Collider(this._originData, this._centerAnchor)
     },
@@ -303,7 +309,23 @@ flax.Module.Collider = {
         
     },
     "onExit": function () {
-
+        if(this._colliders) {
+            for(var k in this._colliders) {
+                var cs = this._colliders[k];
+                var frame = -1;
+                while(++frame < cs.length){
+                    var cc = cs[frame];
+                    if(cc && cc.destroy) {
+                        cc.destroy();
+                    }
+                }
+            }
+            this._colliders = null;
+        }
+        if(this._mainCollider) {
+            this._mainCollider.destroy();
+            this._mainCollider = null;
+        }
     },
     setClickArea: function (rect) {
         if(this._mainCollider) this._mainCollider._clickArea = rect;

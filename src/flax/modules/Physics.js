@@ -8,6 +8,11 @@ flax.Module.PhysicsShape = {
     physicsBody:null,//the physics body if exist
     physicsFixture:null,//the physics fixture
     physicsContact:null,//the contact info if collision happens
+    "onExit": function () {
+        this.physicsBody = null;
+        this.physicsFixture = null;
+        this.physicsContact = null;
+    },
     /**
      * Enable the physics with the params
      * @param {int} type Box2D.Dynamics.b2Body.b2_dynamicBody,b2_staticBody,b2_kinematicBody
@@ -88,6 +93,7 @@ flax.Module.PhysicsShape = {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 flax.Module.Physics = {
+    ignoreBodyRotation:false,
     _physicsBody:null,
     _physicsToBeSet:null,
     _physicsBodyParam:null,
@@ -121,6 +127,8 @@ flax.Module.Physics = {
             this._physicsBody = null;
         }
         this._physicsBodyParam = null;
+        this._physicsToBeSet = null;
+        this.ignoreBodyRotation = false;
     },
     physicsBody:{
         get: function()

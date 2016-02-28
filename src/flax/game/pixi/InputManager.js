@@ -108,6 +108,11 @@ flax.InputManager = flax.Container.extend({
         this._super();
         this.removeAllTouchListeners();
         this.removeAllKeyboardListeners();
+        this._masks = null;
+        this._callbacks = null;
+        this._keyboardCallbacks = null;
+        this._keyboardListener = null;
+        this._touchListeners = null;
     },
     /**
      * @param{cc.Node} target the target want to receive the touch event, if target is null, then global event will be triggered

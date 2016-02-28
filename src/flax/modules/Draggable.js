@@ -16,6 +16,7 @@ flax.Module.Draggable = {
     _inDragging:false,
     _lastPos:null,
     _anchorPos:null,
+    _p:null,
 
     "onEnter":function() {
 
@@ -34,6 +35,9 @@ flax.Module.Draggable = {
         this.dragEnabled = true;
         this._boundsView = null;
         this._viewRect = null;
+        this._lastPos = null;
+        this._anchorPos = null;
+        this._p = null;
     },
     /**
      * Scroll the pane to make the target in the screen center
@@ -60,7 +64,6 @@ flax.Module.Draggable = {
         this._inDragging = true;
         this._lastPos = touch.getLocation();
     },
-    _p:null,
     _drag:function(touch, event){
 
         if(!this._inDragging) return;

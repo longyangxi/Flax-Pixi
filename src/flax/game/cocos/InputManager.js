@@ -121,7 +121,12 @@ flax.InputManager = cc.Node.extend({
         this.removeAllTouchListeners();
         this.removeAllKeyboardListeners();
         this.removeAllMasks();
-//        cc.eventManager.removeAllListeners();
+        cc.eventManager.removeAllListeners();
+        this._masks = null;
+        this._callbacks = null;
+        this._keyboardCallbacks = null;
+        this._keyboardListener = null;
+        this._touchListeners = null;
     },
     /**
      * Add a Sprite node which will permitted the lower sprite to get touch event callback
@@ -132,6 +137,7 @@ flax.InputManager = cc.Node.extend({
         mask.__isInputMask = true;
     },
     removeMask:function(mask){
+        if(!this.parent) return;
         var i = this._masks.indexOf(mask);
         if(i > -1) {
             this._masks.splice(i, 1);
@@ -139,6 +145,7 @@ flax.InputManager = cc.Node.extend({
         }
     },
     removeAllMasks:function(){
+        if(!this.parent) return;
         var i = this._masks.length;
         while(i--){
             this._masks[i].__isInputMask = false;
@@ -241,6 +248,7 @@ flax.InputManager = cc.Node.extend({
     },
     removeListener:function(target, func, type)
     {
+        if(!this.parent) return;
         if(target == null) target = this;
         var calls = this._callbacks[target.__instanceId];
         if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {

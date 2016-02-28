@@ -38,8 +38,12 @@ flax.module.enemyWave = {
     },
     "onExit":function(){
         this.onWaveBegin.removeAll();
+        this.onWaveBegin = null;
         this.onEnemyIn.removeAll();
+        this.onEnemyIn = null;
         this.onWaveOver.removeAll();
+        this.onWaveOver = null;
+        this.batchCanvas = null;
     },
     startWave:function()
     {

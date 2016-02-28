@@ -112,13 +112,16 @@ flax.FrameData = flax.Class.extend({
     },
     clone:function(){
         return new flax.FrameData(this._data);
+    },
+    destroy: function () {
+        this._data = null;
     }
 });
 
 flax._movieClip = {
     clsName:"flax.MovieClip",
     sameFpsForChildren:true,//all children use the same fps with this
-    createChildFromPool:false,//todo
+    createChildFromPool:false,
     _autoPlayChildren:false,//auto play children when play
     namedChildren:null,
     _childrenDefine: null,
@@ -151,12 +154,13 @@ flax._movieClip = {
                     return false;
                 }
             }
-
-            if(!isDisplay && flax.assetsManager.getAssetType(child.assetsFile, child.assetID) == assetType){
-                child.setSource(assetsFile, assetID);
-            } else {
+            //todo
+            //if(!isDisplay && flax.assetsManager.getAssetType(child.assetsFile, child.assetID) == assetType){
+            //    child.setSource(assetsFile, assetID);
+            //} else
+            {
                 var autoPlay = child._autoPlayChildren;
-                child.destroy();
+                this.destroyChild(child);
                 child = isDisplay ? assetID : flax.assetsManager.createDisplay(assetsFile, assetID, null, this.createChildFromPool);
                 child.name = childName;
                 this.namedChildren[childName] = child;
@@ -248,9 +252,7 @@ flax._movieClip = {
     onInit:function()
     {
         for(var childName in this.namedChildren){
-            this.namedChildren[childName].destroy();
-            delete this.namedChildren[childName];
-            delete this[childName];
+            this.destroyChild(this.namedChildren[childName]);
         }
         this.namedChildren = {};
         this._childrenDefine = this.define['children'];
@@ -336,8 +338,9 @@ flax._movieClip = {
             var childName = d.name;
             var frameData = d.data;
             var child = this.namedChildren[childName];
+
             //Ignore the invisible child
-            if(child && !child.visible) continue;
+            //if(child && !child.visible) continue;
 
             if(frameData) {
                 var childDefine = this._childrenDefine[childName];
@@ -377,10 +380,7 @@ flax._movieClip = {
                     }
                 }
             }else if(child) {
-                if(child.destroy) child.destroy();
-                else child.removeFromParent(true);
-                delete this.namedChildren[childName];
-                delete this[childName];
+                this.destroyChild(child);
             }
         }
 
@@ -390,6 +390,20 @@ flax._movieClip = {
                 child.zIndex = child.__eIndex;
             }
         }
+    },
+    /**
+     * Manually destroy the child
+     * */
+    destroyChild: function (child) {
+        if(child.parent != this) return false;
+        var childName = child.name;
+        if(this.namedChildren[childName] == child) {
+            delete this.namedChildren[childName];
+            delete this[childName];
+        }
+        if(child.destroy) child.destroy();
+        else child.removeFromParent(true);
+        return true;
     },
     stop:function()
     {
@@ -527,17 +541,18 @@ flax._movieClip = {
     //    }
     //    return rect;
     //},
-    onRecycle:function()
+    reset:function()
     {
         this._super();
         this.sameFpsForChildren = true;
-        this.createChildFromPool = true;
+        this.createChildFromPool = false;
         this._autoPlayChildren = false;
         if(RESET_FRAME_ON_RECYCLE){
             for(var key in this.namedChildren) {
                 var child = this.namedChildren[key];
                 if(child.__isFlaxSprite === true) {
-                    child.gotoAndStop(0);
+                    this.currentFrame = 0;
+                    //child.gotoAndStop(0);
                 }
             }
         }
@@ -548,8 +563,9 @@ flax._movieClip = {
             delete this.namedChildren[childName];
             delete this[childName];
         }
-        //todo
-        //this._childrenDefine = null;
+        this._childrenDefine = null;
+        this._gRect = null;
+        this._extraChildren = null;
     }
 };
 

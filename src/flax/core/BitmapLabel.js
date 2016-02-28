@@ -25,7 +25,14 @@ flax.BitmapLabel = _superCls.extend({
         this._super();
         this._updateStr();
     },
-
+    onExit: function () {
+        this._super();
+        this.frames = null;
+        this.chars = null;
+        this.params = null;
+        this._charCanvas = null;
+        this._fontDefine = null;
+    },
     getString:function()
     {
         return this._str;

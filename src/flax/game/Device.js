@@ -47,7 +47,10 @@ flax.device = {
         return flax.game.config["landscape"] == this.landscape;
     },
     showTipTop: function () {
-        if(this._imgTip && this._imgTip.parent) this._imgTip.parent.setChildIndex(this._imgTip, this._imgTip.parent.childrenCount - 1);
+        if(this._imgTip && this._imgTip.parent) {
+            if(FRAMEWORK == "cocos") this._imgTip.zIndex = 9999999;
+            else this._imgTip.parent.setChildIndex(this._imgTip, this._imgTip.parent.childrenCount - 1);
+        }
     },
     _showOrientaionTip:function(){
         var self = flax.device;

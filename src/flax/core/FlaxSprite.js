@@ -40,13 +40,13 @@ flax._sprite = {
     currentAnim:null,
     totalFrames:0,
     frameInterval:0,
-    ignoreBodyRotation:false,
     define:null,
     name:null,
     assetsFile:null,
     assetID:null,
     clsName:"flax.FlaxSprite",
     playing:false,
+    mask:null,
     _prevFrame:-1,
     _labelFrames:null,
     _labelSounds:null,
@@ -65,6 +65,9 @@ flax._sprite = {
     _loopSequence:false,
     _sequenceIndex:0,
     _fpsForAnims:null,
+    _animTime:0,
+    _animReversed:false,
+    _destroyed:false,
 
     ctor:function(assetsFile, assetID){
         if(this.clsName == "flax.FlaxSprite") throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!";
@@ -76,13 +79,7 @@ flax._sprite = {
             this._super();
         }
         this.__instanceId = flax.getInstanceId();
-        this._anchorBindings = [];
-        this._animSequence = [];
-        this._fpsForAnims = {};
-        this.onAnimationOver = new signals.Signal();
-        this.onSequenceOver = new signals.Signal();
-        this.onFrameChanged = new signals.Signal();
-        this.onFrameLabel = new signals.Signal();
+        this.reset();
         this.setSource(assetsFile, assetID);
     },
     /**
@@ -95,7 +92,10 @@ flax._sprite = {
             throw 'assetsFile and assetID can not be null!';
             return;
         }
-        if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
+
+        //todo
+        //if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
+
         this.assetsFile = assetsFile;
         //see if there is a sub animation
         this.currentAnim = null;
@@ -172,6 +172,9 @@ flax._sprite = {
     },
     getLabels:function(label)
     {
+        if(!this.define) {
+            console.log("fuck: " + this.assetID)
+        }
         if(this.define['labels']){
             return this.define['labels'][label];
         }
@@ -434,8 +437,6 @@ flax._sprite = {
             this.unschedule(this.onFrame);
         }
     },
-    _animTime:0,
-    _animReversed:false,
     onFrame:function(delta)
     {
         if(!this.visible) return;
@@ -603,11 +604,6 @@ flax._sprite = {
 
         this._destroyed = true;
 
-        this.onAnimationOver.removeAll();
-        this.onSequenceOver.removeAll();
-        this.onFrameChanged.removeAll();
-        this.onFrameLabel.removeAll();
-
         if(flax.inputManager){
             flax.inputManager.removeListener(this);
             if(this.__isInputMask) flax.inputManager.removeMask(this);
@@ -629,6 +625,25 @@ flax._sprite = {
         this._anchorBindings.length = 0;
         //call the module onExit
         flax.callModuleOnExit(this);
+
+        this.onAnimationOver.removeAll();
+        this.onSequenceOver.removeAll();
+        this.onFrameChanged.removeAll();
+        this.onFrameLabel.removeAll();
+
+        this.onAnimationOver = null;
+        this.onSequenceOver = null;
+        this.onFrameChanged = null;
+        this.onFrameLabel = null;
+
+        this.define = null;
+        this.mask = null;
+        this._labelFrames = null;
+        this._labelSounds = null;
+        this._subAnims = null;
+        this._animSequence = null;
+        this._loopSequence = null;
+        this._fpsForAnims = null;
     },
     _updateLaguage:function(){
         if(!flax.language) return;
@@ -670,11 +685,16 @@ flax._sprite = {
             this.mask.setLocalZOrder(zIndex);
         }
     },
-    _destroyed:false,
     destroy:function()
     {
         if(this._destroyed) return;
         this._destroyed = true;
+
+        //don't destroy a child from a MovieClip directly
+        if(this.parent && this.parent.__isMovieClip === true && this.parent.namedChildren[this.name]) {
+            throw "To destroy a named child from a MovieClip, use MovieClip.destroyChild please!";
+        }
+
         if(this.autoRecycle) {
             var pool = flax.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
             pool.recycle(this);
@@ -682,10 +702,18 @@ flax._sprite = {
         this.removeFromParent();
     },
     /**
-     * Do some things when the object recycled by the pool
+     * Reset and init all the parameters, specially used for ObjectPool
      * */
-    onRecycle:function()
+    reset:function()
     {
+        this._anchorBindings = [];
+        this._animSequence = [];
+        this._fpsForAnims = {};
+        this.onAnimationOver = new signals.Signal();
+        this.onSequenceOver = new signals.Signal();
+        this.onFrameChanged = new signals.Signal();
+        this.onFrameLabel = new signals.Signal();
+
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;
         this.setScale(1.0);
@@ -694,8 +722,8 @@ flax._sprite = {
         this.autoDestroyWhenOver = false;
         this.autoStopWhenOver = false;
         this.autoHideWhenOver = false;
-        this.ignoreBodyRotation = false;
-        if(RESET_FRAME_ON_RECYCLE) this.gotoAndStop(0);
+
+        if(RESET_FRAME_ON_RECYCLE) this.currentFrame = 0;
 
         this.setPosition(0, 0);
         this._animSequence.length = 0;

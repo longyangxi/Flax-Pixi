@@ -29,8 +29,10 @@ flax.ProgressBar = flax.Animator.extend({
             this._bar = null;
         }
         this.mask = null;
+        this._type = flax.ProgressBarType.HORIZONTAL;
+        this._reversed = false;
     },
-    onRecycle: function () {
+    reset: function () {
         this._super();
         this._percentage = 0;
         this._type = flax.ProgressBarType.HORIZONTAL;

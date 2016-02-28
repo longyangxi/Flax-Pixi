@@ -109,11 +109,12 @@ flax._image = {
             delete  node.__anchor__;
         }
         this._anchorBindings.length = 0;
+        this.define = null;
     },
     /**
      * Do some thins when the object recycled by the pool
      * */
-    onRecycle:function()
+    reset:function()
     {
         //when recycled, reset all the prarams as default
         this.autoRecycle = false;

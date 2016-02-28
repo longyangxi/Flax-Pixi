@@ -18,7 +18,7 @@ flax._gunnerDefine = {
         this._guns = [];
         if(this._gunParam) this.setGunParam(this._gunParam);
     },
-    onRecycle:function()
+    reset:function()
     {
         this._super();
         this.camp = null;

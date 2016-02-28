@@ -18,6 +18,10 @@ flax.Animator = flax.FlaxSprite.extend({
             return;
         }
     },
+    onExit: function () {
+        this._super();
+        this._frameNames = null;
+    },
     doRenderFrame:function(frame)
     {
         var texture = flax.spriteFrameCache.getSpriteFrame(this._frameNames[frame]);
