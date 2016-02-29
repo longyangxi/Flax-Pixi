@@ -6,21 +6,10 @@ flax.ButtonGroup = flax.Class.extend({
     buttons:null,
     selectedButton:null,
     onSelected:null,
-    _destroyed:false,
     ctor:function()
     {
         this.buttons = [];
         this.onSelected = new signals.Signal();
-    },
-    destroy: function () {
-        if(this._destroyed) return;
-        this._destroyed = true;
-        for(var i = 0; i < this.buttons.length; i++) {
-            this.buttons[i].group = null;
-        }
-        this.selectedButton = null;
-        this.onSelected.removeAll();
-        this.onSelected = null;
     },
     addButton:function(buttons)
     {
@@ -44,6 +33,7 @@ flax.ButtonGroup = flax.Class.extend({
             this.buttons.splice(i, 1);
             button.group = null;
             if(this.selectedButton == button){
+                this.selectedButton = null;
 //                this.selectedButton = this.buttons[0];
 //                if(this.selectedButton) this.selectedButton.setState(ButtonState.SELECTED);
             }
