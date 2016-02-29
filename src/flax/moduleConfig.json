@@ -25,7 +25,7 @@
         "core/MovieClip.js",
         "core/BitmapLabel.js",
         "core/Button.js",
-        "core/ButtonGroup",
+        "core/ButtonGroup.js",
         "core/ListView.js"
       ],
       "pixi_base" : [

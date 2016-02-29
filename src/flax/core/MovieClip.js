@@ -196,18 +196,22 @@ flax._movieClip = {
     },
     setOpacity: function (opacity) {
         //todo
-        cc.Node.prototype.setOpacity.call(this, opacity);
-        for(var k in this.namedChildren){
-            var child = this.namedChildren[k];
-            if(child.setOpacity) child.setOpacity(opacity);
+        if(FRAMEWORK == "cocos") {
+            cc.Node.prototype.setOpacity.call(this, opacity);
+            for(var k in this.namedChildren){
+                var child = this.namedChildren[k];
+                if(child.setOpacity) child.setOpacity(opacity);
+            }
         }
     },
     setColor: function (color) {
         //todo
-        cc.Node.prototype.setColor.call(this, color);
-        for(var k in this.namedChildren){
-            var child = this.namedChildren[k];
-            if(child.setColor) child.setColor(color);
+        if(FRAMEWORK == "cocos") {
+            cc.Node.prototype.setColor.call(this, color);
+            for(var k in this.namedChildren){
+                var child = this.namedChildren[k];
+                if(child.setColor) child.setColor(color);
+            }
         }
     },
     /**

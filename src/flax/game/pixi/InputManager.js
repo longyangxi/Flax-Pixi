@@ -150,17 +150,17 @@ flax.InputManager = flax.Container.extend({
     removeListener:function(target, func, type, context)
     {
         if(target == null) target = this;
-        target.removeListener(type, func, context);
+        if(type) target.removeListener(type, func, context);
+        else target.removeAllListeners(type);
     },
     removeAllTouchListeners:function()
     {
         this._callbacks = {};
-        for(var id in this._touchListeners){
-            var listener = this._touchListeners[id];
-            cc.eventManager.removeListener(listener);
-            delete this._touchListeners[id];
-
-        }
+        //for(var id in this._touchListeners){
+        //    var listener = this._touchListeners[id];
+        //    cc.eventManager.removeListener(listener);
+        //    delete this._touchListeners[id];
+        //}
     },
     removeAllKeyboardListeners:function()
     {

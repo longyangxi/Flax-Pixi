@@ -147,6 +147,10 @@ flax._buttonDefine = {
     },
     _onClick:function(touch, event)
     {
+        if(!this.running) {
+            //todo, the event has been removed, but still be called here in pixi
+            return;
+        }
         if(this._state == ButtonState.LOCKED || this._state == ButtonState.DISABLED) return;
         if(this.isSelectable())
         {

@@ -459,6 +459,9 @@ flax._sprite = {
             {
                 this.onAnimationOver.dispatch(this);
             }
+
+            if(!this.running) return;
+
             if(this.autoDestroyWhenOver) {
                 this.destroy();
             }else if(this.autoHideWhenOver) {
@@ -470,6 +473,9 @@ flax._sprite = {
             }
             this._animTime = 0;
         }
+
+        if(!this.running) return;
+
         end = !reversed  ? this.currentFrame > this._loopEnd : this.currentFrame < this._loopEnd;
         var last = !reversed ? this.currentFrame > this.totalFrames - 1 : this.currentFrame < 0;
         if(end || last) this.currentFrame = this._loopStart;
@@ -691,8 +697,12 @@ flax._sprite = {
         this._destroyed = true;
 
         //don't destroy a child from a MovieClip directly
-        if(this.parent && this.parent.__isMovieClip === true && this.parent.namedChildren[this.name]) {
-            throw "To destroy a named child from a MovieClip, use MovieClip.destroyChild please!";
+        if(this.parent && this.parent.__isMovieClip === true) {
+            if(this.parent.namedChildren[this.name] == this) {
+                delete this.parent.namedChildren[this.name];
+                delete this.parent[this.name];
+            }
+            //throw "To destroy a named child from a MovieClip, use MovieClip.destroyChild please!";
         }
 
         if(this.autoRecycle) {
