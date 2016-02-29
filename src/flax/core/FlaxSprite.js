@@ -93,8 +93,7 @@ flax._sprite = {
             return;
         }
 
-        //todo
-        //if(this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
+        if(!this.__fromPool && this.assetsFile == assetsFile && (this.assetID == assetID || this._baseAssetID == assetID)) return;
 
         this.assetsFile = assetsFile;
         //see if there is a sub animation
@@ -172,9 +171,6 @@ flax._sprite = {
     },
     getLabels:function(label)
     {
-        if(!this.define) {
-            console.log("fuck: " + this.assetID)
-        }
         if(this.define['labels']){
             return this.define['labels'][label];
         }
@@ -710,6 +706,7 @@ flax._sprite = {
             pool.recycle(this);
         }
         this.removeFromParent();
+        this.autoRecycle = false;
     },
     /**
      * Reset and init all the parameters, specially used for ObjectPool
@@ -725,7 +722,6 @@ flax._sprite = {
         this.onFrameLabel = new signals.Signal();
 
         //when recycled, reset all the prarams as default
-        this.autoRecycle = false;
         this.setScale(1.0);
         this.opacity = 255;
         this.rotation = 0;

@@ -67,7 +67,6 @@ flax.replaceScene = function(sceneName, transition, duration)
     }
 
     flax.preload(s.res,function(){
-        try {
         //init language
         if (flax.language) flax.language.onLoaded(s.res);
         //remove the font resources
@@ -105,9 +104,6 @@ flax.replaceScene = function(sceneName, transition, duration)
         }
 
         flax.onSceneEnter.dispatch(flax.currentSceneName);
-        }catch(e){
-            alert(e);
-        }
     });
 };
 /**

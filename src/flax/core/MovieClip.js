@@ -309,6 +309,9 @@ flax._movieClip = {
         this._super();
         this.setContentSize(this._gRect.width, this._gRect.height);
     },
+    addChild: function (child, localZOrder, tag) {
+        this._super(child, localZOrder, tag);
+    },
     addChildAt: function (child, index) {
         this._super(child, index);
         if(!child.name || !this.namedChildren[child.name]) {
@@ -361,6 +364,7 @@ flax._movieClip = {
                     this[childName] = child;
                     this.onNewChild(child);
                 }
+
                 frameData.setForChild(child);
                 //all children use the same fps with this
                 if(this.sameFpsForChildren) child.fps = this.fps;
@@ -399,7 +403,6 @@ flax._movieClip = {
      * Manually destroy the child
      * */
     destroyChild: function (child) {
-        if(child.parent != this) return false;
         var childName = child.name;
         if(this.namedChildren[childName] == child) {
             delete this.namedChildren[childName];
@@ -407,7 +410,6 @@ flax._movieClip = {
         }
         if(child.destroy) child.destroy();
         else child.removeFromParent(true);
-        return true;
     },
     stop:function()
     {
@@ -570,6 +572,9 @@ flax._movieClip = {
         this._childrenDefine = null;
         this._gRect = null;
         this._extraChildren = null;
+        //In cocos, remove all children
+        if(this.autoRecycle && FRAMEWORK == "cocos")
+            this.removeAllChildren(true);
     }
 };
 
