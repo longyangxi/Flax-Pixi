@@ -49,7 +49,7 @@ flax.AssetsManager = flax.Class.extend({
     subAnimsCache:null,
     fontsCache:null,
     imageCache:null,
-    toolsVersion:null,
+    metaCache:null,
 
    ctor:function()
    {
@@ -60,7 +60,7 @@ flax.AssetsManager = flax.Class.extend({
        this.subAnimsCache = {};
        this.fontsCache = {};
        this.imageCache = [];
-       this.toolsVersion = {};
+       this.metaCache = {};
    },
    getAssetType:function(assetsFile, assetID)
    {
@@ -103,9 +103,13 @@ flax.AssetsManager = flax.Class.extend({
         if(subAnims.length) {
             assetID = assetID + "$" + subAnims[0];
         }
+
+        if(params == null) params = {};
+
         var define = this.getDisplayDefine(assetsFile, assetID);
         //if it's a shared object, then fetch its source assetsFile
         if(define && define.type == "share"){
+            //params.__isShare = true;
             return this.createDisplay(this._getSharedPlist(assetsFile, define), assetID, params, fromPool, clsName);
         }
 
@@ -142,7 +146,7 @@ flax.AssetsManager = flax.Class.extend({
                 {
                     mcCls = isMC ? flax.MovieClip : flax.Animator;
                     clsName = isMC ? "flax.MovieClip" : "flax.Animator";
-                    if(isMC && params && params.batch === true){
+                    if(isMC && params.batch === true){
                         mcCls = flax.MovieClipBatch;
                         clsName = "flax.MovieClipBatch";
                     }
@@ -151,7 +155,7 @@ flax.AssetsManager = flax.Class.extend({
                 throw  "There is no display with assetID: "+assetID+" in assets file: "+assetsFile+", or make sure the display is not a BLANK symbol!";
             }
         }
-        if(params == null) params = {};
+
         var mc = null;
         var parent = params.parent;
         delete params.parent;
@@ -234,6 +238,7 @@ flax.AssetsManager = flax.Class.extend({
         delete this.mcsCache[assetsFile];
         delete this.subAnimsCache[assetsFile];
         delete this.fontsCache[assetsFile];
+        delete this.metaCache[assetsFile];
 
         var assetsFile1 = assetsFile;
         var ext = flax.path.extname(assetsFile);
@@ -265,9 +270,10 @@ flax.AssetsManager = flax.Class.extend({
         if(dict == null){
             throw "Make sure you have loaded the resource: " + assetsFile;
         }
+
+        this.metaCache[assetsFile] = dict['metadata'];
         //the min tool version this API needed
-        var toolVersion = dict["metadata"]["version"] || dict["metadata"]["flaxVersion"];
-        this.toolsVersion[assetsFile] = toolVersion || 0;
+        var toolVersion = this.getToolVersion(assetsFile);
         if(!toolVersion || toolVersion < MIN_TOOL_VERSION){
             throw "The resource: " + assetsFile + " was exported with the old version of Flax, please do it with current version!";
         }
@@ -320,6 +326,7 @@ flax.AssetsManager = flax.Class.extend({
             if(dDefine['anchors']) dDefine['anchors'] = this._parseFrames(dDefine['anchors']);
             if(dDefine['colliders']) dDefine['colliders'] = this._parseFrames(dDefine['colliders']);
             if(dDefine['scale9']) dDefine['scale9'] = flax._strToRect(dDefine['scale9']);
+
             dDefine['fps'] = fps || flax.game.config["frameRate"];
             this.displayDefineCache[assetsFile + dName] = dDefine;
             this._parseSubAnims(assetsFile, dName);
@@ -453,7 +460,7 @@ flax.AssetsManager = flax.Class.extend({
     },
     getToolVersion:function(assetsFile)
     {
-        var v = this.toolsVersion[assetsFile];
+        var v = this.metaCache[assetsFile]['version'] || this.metaCache[assetsFile]['flaxVersion'];
         return v || 0;
     }
 });

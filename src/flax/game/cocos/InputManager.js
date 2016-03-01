@@ -33,6 +33,10 @@ flax.InputManager = cc.Node.extend({
     justDragged:false,
     justDragDist:0,
     justDragOff:0,
+    /**
+     * If set, only the target can receive the touch event
+     * */
+    soleTarget:null,
     _touchBeginPos:null,
     _masks:[],
     _callbacks:{},
@@ -89,28 +93,29 @@ flax.InputManager = cc.Node.extend({
             onTouchBegan:function(touch, event)
             {
                 flax.mousePos = touch.getLocation();
-                if (!self.enabled) return false;
-                if(!self.nullEnabled) return false;
                 self.inDragging = false;
                 self.justDragged = false;
                 self.inTouching = true;
+                if (!self.enabled) return false;
+                if(!self.nullEnabled) return false;
+                if(this.soleTarget) return false;
                 self._dispatchOne(self, touch, event, InputType.press);
                 return true;
             },
             onTouchEnded:function(touch, event)
             {
-                if(!self.nullEnabled) return;
                 self.inDragging = false;
                 self.inTouching = false;
+                if(!self.nullEnabled) return;
                 self._dispatchOne(self, touch, event, InputType.up);
                 self._dispatchOne(self, touch, event, InputType.click);
             },
             onTouchMoved:function(touch, event)
             {
                 flax.mousePos = touch.getLocation();
-                if(!self.nullEnabled) return;
                 self.inDragging = true;
                 self.justDragged = true;
+                if(!self.nullEnabled) return;
                 self._dispatchOne(self, touch, event, InputType.move);
             }
         });
@@ -127,6 +132,7 @@ flax.InputManager = cc.Node.extend({
         this._keyboardCallbacks = null;
         this._keyboardListener = null;
         this._touchListeners = null;
+        this.soleTarget = null;
     },
     /**
      * Add a Sprite node which will permitted the lower sprite to get touch event callback
@@ -252,6 +258,7 @@ flax.InputManager = cc.Node.extend({
         if(target == null) target = this;
         var calls = this._callbacks[target.__instanceId];
         if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {
+            if(this.soleTarget == target) this.soleTarget = null;
 //            this.scheduleOnce(function(){
                 var call = null;
                 var i = calls.length;
@@ -320,6 +327,8 @@ flax.InputManager = cc.Node.extend({
 
         var target = event.getCurrentTarget();
 
+        if(this.soleTarget && this.soleTarget != target) return false;
+
         if(!flax.ifTouchValid(target, touch)) return false;
 
         //handle the masks
@@ -334,6 +343,9 @@ flax.InputManager = cc.Node.extend({
                 return false;
         }
         this._dispatch(target, touch, event, InputType.press);
+
+        if(this.soleTarget) this.soleTarget = null;
+
         return true;
     },
     handleTouchEnded:function(touch, event)

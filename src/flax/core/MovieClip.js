@@ -120,7 +120,7 @@ flax.FrameData = flax.Class.extend({
 
 flax._movieClip = {
     clsName:"flax.MovieClip",
-    sameFpsForChildren:true,//all children use the same fps with this
+    sameFpsForChildren:false,//all children use the same fps with this
     createChildFromPool:false,
     _autoPlayChildren:false,//auto play children when play
     namedChildren:null,
@@ -550,7 +550,7 @@ flax._movieClip = {
     reset:function()
     {
         this._super();
-        this.sameFpsForChildren = true;
+        this.sameFpsForChildren = false;
         this.createChildFromPool = false;
         this._autoPlayChildren = false;
         if(RESET_FRAME_ON_RECYCLE){
