@@ -49,6 +49,7 @@ flax._sprite = {
     mask:null,
     _prevFrame:-1,
     _labelFrames:null,
+    _frameSounds:null,
     _labelSounds:null,
     _loopStart:0,
     _loopEnd:0,
@@ -159,18 +160,20 @@ flax._sprite = {
     },
     setFpsForAnim:function(anim, fps)
     {
-        this._fpsForAnims[anim] = fps;
+        if(this._fpsForAnims) this._fpsForAnims[anim] = fps;
     },
     addFrameSound:function(frame, sound)
     {
-        this._frameSounds["" + frame] = sound;
+        if(this._frameSounds) this._frameSounds["" + frame] = sound;
     },
     removeFrameSound:function(frame)
     {
-        delete  this._frameSounds["" + frame];
+        if(this._frameSounds) delete  this._frameSounds["" + frame];
     },
     getLabels:function(label)
     {
+        if(!this.define) return null;
+
         if(this.define['labels']){
             return this.define['labels'][label];
         }
@@ -182,6 +185,8 @@ flax._sprite = {
     },
     getAnchor:function(name)
     {
+        if(!this.define) return null;
+
         if(this.define['anchors']){
             var an = this.define['anchors'][name];
             if(an != null) {
@@ -205,6 +210,8 @@ flax._sprite = {
      * */
     bindAnchor:function(anchorName, node, alwaysBind)
     {
+        if(!this.define) return null;
+
         if(!this.define['anchors']) {
             flax.log(this.assetID+": there is no any anchor!");
             return null;
@@ -229,6 +236,8 @@ flax._sprite = {
     },
     unbindAnchor:function(anchorNameOrNode, autoDestroy)
     {
+        if(!this._anchorBindings) return;
+
         var node = null;
         var i = -1;
         var n = this._anchorBindings.length;
@@ -247,6 +256,8 @@ flax._sprite = {
     },
     getCurrentLabel:function()
     {
+        if(!this.define) return null;
+
         var labels = this.define['labels'];
         if(!labels) return null;
         for(var name in labels)
@@ -312,11 +323,13 @@ flax._sprite = {
         this._loopSequence = true;
     },
     stopSequence:function(){
+        if(!this._animSequence) return;
         this._loopSequence = false;
         this._animSequence.length = 0;
     },
     _setSubAnim:function(anim, autoPlay)
     {
+        if(!this._subAnims) return false;
         if(!anim || anim.length == 0) return false;
         if(this._subAnims == null || this._subAnims.indexOf(anim) == -1){
             if(!this.__isButton) {
@@ -357,7 +370,7 @@ flax._sprite = {
             this._loopEnd = lbl.end;
             this.currentFrame = this._loopStart;
             this.currentAnim = frameOrLabel;
-            if(this._fpsForAnims[frameOrLabel]) {
+            if(this._fpsForAnims && this._fpsForAnims[frameOrLabel]) {
                 this.setFPS(this._fpsForAnims[frameOrLabel]);
             }
         }else{
@@ -524,11 +537,13 @@ flax._sprite = {
         if(this._prevFrame == frame && forceUpdate != true) return;
         if(this._prevFrame != frame) this._prevFrame = frame;
         this._handleAnchorBindings();
-        this.doRenderFrame(frame);
-        if(this.onFrameChanged.getNumListeners()) this.onFrameChanged.dispatch(this.currentFrame);
-        if(this._labelFrames.indexOf(frame) > -1) this.onFrameLabel.dispatch(this.getCurrentLabel(frame));
-        var frameSound = this._frameSounds["" + frame];
-        if(frameSound && flax.playSound) flax.playSound(frameSound);
+        if(this.define) this.doRenderFrame(frame);
+        if(this.onFrameChanged && this.onFrameChanged.getNumListeners()) this.onFrameChanged.dispatch(this.currentFrame);
+        if(this.onFrameLabel && this._labelFrames.indexOf(frame) > -1) this.onFrameLabel.dispatch(this.getCurrentLabel(frame));
+        if(this._frameSounds) {
+            var frameSound = this._frameSounds["" + frame];
+            if(frameSound && flax.playSound) flax.playSound(frameSound);
+        }
     },
     doRenderFrame:function(frame)
     {
@@ -536,6 +551,7 @@ flax._sprite = {
     },
     _handleAnchorBindings:function()
     {
+        if(!this._anchorBindings) return;
         var node = null;
         var anchor = null;
         var i = -1;
@@ -646,6 +662,7 @@ flax._sprite = {
         this._animSequence = null;
         this._loopSequence = null;
         this._fpsForAnims = null;
+        this._frameSounds = null;
     },
     _updateLaguage:function(){
         if(!flax.language) return;

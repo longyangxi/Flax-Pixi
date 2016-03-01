@@ -137,6 +137,7 @@ flax._movieClip = {
      * */
     replaceChild:function(childName, assetID, assetsFile)
     {
+        if(!this.running) return false;
         var childDefine = this._childrenDefine[childName];
         if(childDefine == null){
             flax.log("There is no child with named: "+childName +"  in MovieClip: "+this.assetID);
@@ -180,6 +181,7 @@ flax._movieClip = {
     },
     getFrameData:function(childName, frame)
     {
+        if(!this.define) return null;
         if(this.define && this.define.frames){
             var arr = this.define.frames[frame];
             if(arr) {
@@ -314,7 +316,7 @@ flax._movieClip = {
     },
     addChildAt: function (child, index) {
         this._super(child, index);
-        if(!child.name || !this.namedChildren[child.name]) {
+        if(!child.name || (this.namedChildren && !this.namedChildren[child.name])) {
             if (!this._extraChildren) this._extraChildren = [];
             child.__eIndex = index;
             this._extraChildren.push(child);
@@ -404,7 +406,7 @@ flax._movieClip = {
      * */
     destroyChild: function (child) {
         var childName = child.name;
-        if(this.namedChildren[childName] == child) {
+        if(this.namedChildren && this.namedChildren[childName] == child) {
             delete this.namedChildren[childName];
             delete this[childName];
         }
@@ -414,7 +416,7 @@ flax._movieClip = {
     stop:function()
     {
         this._super();
-        if(this._autoPlayChildren) {
+        if(this._autoPlayChildren && this.namedChildren) {
             for(var key in this.namedChildren) {
                 var child = this.namedChildren[key];
                 if(child.__isFlaxSprite === true) {
@@ -426,7 +428,7 @@ flax._movieClip = {
     play:function()
     {
         this._super();
-        if(this._autoPlayChildren) {
+        if(this._autoPlayChildren && this.namedChildren) {
             for(var key in this.namedChildren) {
                 var child = this.namedChildren[key];
                 if(child.__isFlaxSprite === true) {
@@ -443,6 +445,7 @@ flax._movieClip = {
     {
         if(this._autoPlayChildren == v) return;
         this._autoPlayChildren = v;
+        if(!this.namedChildren) return;
         for(var key in this.namedChildren) {
             var child = this.namedChildren[key];
             if(child.__isMovieClip === true) {
@@ -475,6 +478,7 @@ flax._movieClip = {
     },
     getChild:function(name, nest)
     {
+        if(!this.namedChildren) return null;
         if(nest === undefined) nest = true;
         var child = this.namedChildren[name];
         if(child) return child;
@@ -490,6 +494,7 @@ flax._movieClip = {
     },
     getChildByAssetID:function(id)
     {
+        if(!this.namedChildren) return null;
         var child = null;
         for(var key in this.namedChildren) {
             child = this.namedChildren[key];
@@ -519,7 +524,7 @@ flax._movieClip = {
         if(this._fps == f)  return;
         this._fps = f;
         this.updateSchedule();
-        if(!this.sameFpsForChildren) return;
+        if(!this.sameFpsForChildren || !this.namedChildren) return;
         var child = null;
         for(var key in this.namedChildren) {
             child = this.namedChildren[key];
