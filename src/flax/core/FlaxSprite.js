@@ -806,7 +806,6 @@ flax.FlaxSprite.create = function(assetsFile, assetID)
     tl.clsName = "flax.FlaxSprite";
     return tl;
 };
-//Avoid to advanced compile mode
 window['flax']['FlaxSprite'] = flax.FlaxSprite;
 _defineGT(flax.FlaxSprite.prototype);
 
@@ -820,7 +819,6 @@ if(FRAMEWORK == "cocos"){
         tl.clsName = "flax.FlaxSpriteBatch";
         return tl;
     };
-    //Avoid to advanced compile mode
     window['flax']['FlaxSpriteBatch'] = flax.FlaxSpriteBatch;
     _defineGT(flax.FlaxSpriteBatch.prototype);
 }

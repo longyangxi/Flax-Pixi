@@ -162,11 +162,9 @@ flax._gunnerDefine = {
 };
 
 flax.Gunner = flax.Animator.extend(flax._gunnerDefine);
-//Avoid to advanced compile mode
 window['flax']['Gunner'] = flax.Gunner;
 
 flax.MCGunner = flax.MovieClip.extend(flax._gunnerDefine);
-//Avoid to advanced compile mode
 window['flax']['MCGunner'] = flax.MCGunner;
 
 var _p = flax.Gunner.prototype;

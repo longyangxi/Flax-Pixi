@@ -597,7 +597,6 @@ _p.autoPlayChildren;
 flax.defineGetterSetter(_p, "autoPlayChildren", _p.getAutoPlayChildren, _p.setAutoPlayChildren);
 flax.defineGetterSetter(_p, "opacity", _p.getOpacity, _p.setOpacity);
 
-//Avoid to advanced compile mode
 window['flax']['MovieClip'] = flax.MovieClip;
 
 ///////////////////////////////////////////////////////////////////////////////////////////////
@@ -617,6 +616,5 @@ if(FRAMEWORK == "cocos"){
     flax.defineGetterSetter(_p, "autoPlayChildren", _p.getAutoPlayChildren, _p.setAutoPlayChildren);
     flax.defineGetterSetter(_p, "opacity", _p.getOpacity, _p.setOpacity);
 
-//Avoid to advanced compile mode
     window['flax']['MovieClipBatch'] = flax.MovieClipBatch;
 }

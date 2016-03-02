@@ -67,8 +67,8 @@ flax.AssetsManager = flax.Class.extend({
        if(this.getMc(assetsFile, assetID)) return flax.ASSET_MOVIE_CLIP;
        var define = this.getDisplayDefine(assetsFile, assetID);
        if(define) {
-           if(define.type == "jpg" || define.type == "png") return flax.ASSET_IMAGE;
-           if(define.type == "share"){
+           if(define['type'] == "jpg" || define['type'] == "png") return flax.ASSET_IMAGE;
+           if(define['type'] == "share"){
                 return this.getAssetType(this._getSharedPlist(assetsFile, define), assetID)
            }
            return flax.ASSET_ANIMATOR;
@@ -108,7 +108,7 @@ flax.AssetsManager = flax.Class.extend({
 
         var define = this.getDisplayDefine(assetsFile, assetID);
         //if it's a shared object, then fetch its source assetsFile
-        if(define && define.type == "share"){
+        if(define && define['type'] == "share"){
             //params.__isShare = true;
             return this.createDisplay(this._getSharedPlist(assetsFile, define), assetID, params, fromPool, clsName);
         }
@@ -128,7 +128,7 @@ flax.AssetsManager = flax.Class.extend({
                 isMC = true;
             }
             if(define){
-                clsName = define.type;
+                clsName = define['type'];
                 if(clsName == "null" && assetID != "jpg" && assetID != "png"){
                     clsName = assetID;
                 }

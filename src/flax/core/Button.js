@@ -281,7 +281,7 @@ flax.SimpleButton.create = function(assetsFile, assetID)
     btn.setState(ButtonState.UP);
     return btn;
 };
-//Avoid to advanced compile mode
+
 window['flax']['SimpleButton'] = flax.SimpleButton;
 
 var _p = flax.SimpleButton.prototype;
@@ -303,7 +303,7 @@ flax.Button.create = function(assetsFile, assetID)
     btn.setState(ButtonState.UP);
     return btn;
 };
-//Avoid to advanced compile mode
+
 window['flax']['Button'] = flax.Button;
 
 _p = flax.Button.prototype;

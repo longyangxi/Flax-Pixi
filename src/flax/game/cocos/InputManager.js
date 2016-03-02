@@ -448,6 +448,7 @@ flax.InputManager = cc.Node.extend({
         return null;
     },
     _dispatch:function(target, touch, event, type){
+        if(!this.running) return;
         if(!this.swallowTouches) {
             this._dispatchOne(target, touch, event, type);
             return;

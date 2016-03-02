@@ -204,7 +204,6 @@ flax.ProgressBar = flax.Animator.extend({
     }
 });
 
-//Avoid to advanced compile mode
 window['flax']['ProgressBar'] = flax.ProgressBar;
 
 var _p = flax.ProgressBar.prototype;

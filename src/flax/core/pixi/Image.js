@@ -215,6 +215,5 @@ if(flax.Scale9Sprite) {
     flax.defineGetterSetter(_p, "scaleX", _p.getScaleX, _p.setScaleX);
     flax.defineGetterSetter(_p, "scaleY", _p.getScaleY, _p.setScaleY);
 
-    //Avoid to advanced compile mode
     window['flax']['Scale9Image'] = flax.Scale9Image;
 }

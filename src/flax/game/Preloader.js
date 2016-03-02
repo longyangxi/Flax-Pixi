@@ -161,6 +161,6 @@ flax._preloader = {
 
 flax.Preloader = flax.Scene.extend(flax._preloader);
 flax.ResPreloader = flax.Sprite.extend(flax._preloader);
-//Avoid to advanced compile mode
+
 window['flax']['Preloader'] = flax.Preloader;
 window['flax']['ResPreloader'] = flax.ResPreloader;

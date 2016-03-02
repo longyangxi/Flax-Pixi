@@ -37,5 +37,4 @@ flax.Animator = flax.FlaxSprite.extend({
     }
 });
 
-//Avoid to advanced compile mode
 window['flax']['Animator'] = flax.Animator;
