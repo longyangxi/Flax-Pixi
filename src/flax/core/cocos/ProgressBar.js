@@ -59,7 +59,7 @@ flax.ProgressBar = flax.Animator.extend({
     {
         if(this.pBar == null) return;
         if(this._tween) {
-            if(!this.pBar.isDone()){
+            if(!this._tween.isDone()){
                 this.pBar.stopAction(this._tween);
             }
             this._tween.release();

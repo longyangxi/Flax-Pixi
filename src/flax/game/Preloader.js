@@ -20,8 +20,15 @@ flax.AbstractPreloader = flax.Scene.extend({
         this.context = context;
     },
     onEnter: function () {
+        if (flax.InputManager) {
+            flax.inputManager = new flax.InputManager();
+            this.addChild(flax.inputManager, 999999);
+        }
         this._super();
         //this.startLoad();
+    },
+    onExit: function () {
+        this._super();
     },
     startLoad: function () {
         var self = this;
@@ -37,6 +44,7 @@ flax.AbstractPreloader = flax.Scene.extend({
        //to be override
     },
     onLoadComplete: function () {
+        if(flax.inputManager) flax.inputManager.removeFromParent();
         if (this.callback)
         {
             this.callback.apply(self.context);
