@@ -313,6 +313,11 @@ flax._movieClip = {
     },
     addChild: function (child, localZOrder, tag) {
         this._super(child, localZOrder, tag);
+        if(!child.name || (this.namedChildren && !this.namedChildren[child.name])) {
+            if (!this._extraChildren) this._extraChildren = [];
+            child.__eIndex = localZOrder || this.childrenCount - 1;
+            this._extraChildren.push(child);
+        }
     },
     addChildAt: function (child, index) {
         this._super(child, index);
