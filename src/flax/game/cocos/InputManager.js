@@ -204,6 +204,8 @@ flax.InputManager = cc.Node.extend({
      * */
     addListener:function(target, func, type, context)
     {
+        if(!this.running) return;
+
         if(func == null) {
             throw "Event callback can not be null!"
         }
