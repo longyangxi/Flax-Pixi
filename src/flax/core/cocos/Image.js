@@ -206,8 +206,8 @@ flax._image = {
     _updateSize:function(sx, sy)
     {
         if(this._imgSize == null) return;
-        this.width = this._imgSize.width*sx;
-        this.height = this._imgSize.height*sy;
+        this.width = this._imgSize.width * sx * flax.resolution;
+        this.height = this._imgSize.height * sy * flax.resolution;
     },
     onInit:function()
     {

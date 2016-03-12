@@ -405,7 +405,9 @@ flax.AssetsManager = flax.Class.extend({
     _getSharedPlist:function(assetsFile, define)
     {
         //get the resource root folder, the share library must be in the root folder
-        var dir = assetsFile.slice(0, assetsFile.indexOf("/"));
+        //var dir = assetsFile.slice(0, assetsFile.indexOf("/"));
+        //get current resource folder
+        var dir = assetsFile.slice(0, assetsFile.lastIndexOf("/"));
         return dir + "/" + define.url + DATA_FORMAT;
     },
     getFrameNames:function(assetsFile, startFrame, endFrame)

@@ -678,14 +678,20 @@ flax._sprite = {
         var dirty = false;
         var _x = this.getPositionX();
         var _y = this.getPositionY();
+        var dx = 0;
+        var dy = 0;
         if(yValue === undefined) {
-            dirty = (pos.x != _x || pos.y != _y);
+            dx = pos.x - _x;
+            dy = pos.y - _y;
+            dirty = (dx != 0 || dy != 0);
             if(dirty) this._super(pos);
         }else {
-            dirty = (pos != _x || yValue != _y);
+            dx = pos - _x;
+            dy = yValue - _y;
+            dirty = (dx != 0 || dy != 0);
             if(dirty) this._super(pos, yValue);
         }
-        this.onNewPosition();
+        this.onNewPosition(dx, dy);
         if(!dirty || !this.parent) return;
         flax.callModuleFunction(this, "onPosition");
     },
@@ -695,7 +701,7 @@ flax._sprite = {
     setPositionY:function (y) {
         this.setPosition(this.getPositionX(), y);
     },
-    onNewPosition: function () {
+    onNewPosition: function (dx, dy) {
 
     },
     setLocalZOrder: function (zIndex) {

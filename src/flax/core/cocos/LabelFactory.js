@@ -39,7 +39,8 @@ flax.createLabel = function(assetsFile, data, define)
 //        lbl.setPlaceholderFontColor(cc.hexToColor(define.color));
         //set the anchor
         var d = flax.assetsManager.getDisplayDefine(assetsFile, txtCls);
-        lbl.setAnchorPoint(d['anchorX'], d['anchorY']);
+        //todo, incorrect anchor when resolution is not 1.0
+        lbl.setAnchorPoint(d['anchorX'], d['anchorY'] * flax.resolution);
 
 //        lbl.setInputFlag(cc.EDITBOX_INPUT_FLAG_PASSWORD);
 //        lbl.setMaxLength(20);
@@ -47,22 +48,21 @@ flax.createLabel = function(assetsFile, data, define)
     }
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
     else if(data.font && bmpFontName == null){
-        //todo, if setFontSize bug occur in JSB, pls don't use cc.FontDefinition to create labelTTF
-        var labelDef = new cc.FontDefinition();
-        labelDef.fontName = data.font;
-        labelDef.fontSize = data.fontSize;
-        labelDef.textAlign = data.textAlign;
-        //labelDef.verticalAlign = cc.VERTICAL_TEXT_ALIGNMENT_CENTER;
-        labelDef.fillStyle = data.fontColor;
-        labelDef.fontDimensions = true;
-        labelDef.boundingWidth = data.textWidth;
-        labelDef.boundingHeight = data.textHeight;
-        //text, fontName, fontSize, dimensions, hAlignment, vAlignment
         if(txtCls == "null" || !flax.language) {
-            lbl = new cc.LabelTTF(define.text, labelDef);
+            lbl = new cc.LabelTTF(define.text);
         }else{
-            lbl = new cc.LabelTTF(flax.language.getStr(txtCls) || define.text, labelDef);
+            lbl = new cc.LabelTTF(flax.language.getStr(txtCls) || define.text);
         }
+
+        lbl.setAnchorPoint(0, 1);
+
+        lbl.setFontName(data.font);
+        lbl.setFontSize(data.fontSize);
+        lbl.setHorizontalAlignment(data.textAlign);
+        //lbl.setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER);
+        lbl.setFontFillColor(data.fontColor);
+        lbl.setDimensions(data.textWidth, data.textHeight);
+
         lbl.__isTTF = true;
         //enable stroke
         //lbl.enableStroke(cc.color(255, 0, 0, 255), 5);

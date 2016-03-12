@@ -43,13 +43,13 @@ flax.FrameData = flax.Class.extend({
         if(data.length > 9) {
             this._isText = true;
             this.font = data[9];
-            this.fontSize = parseInt(data[10]);
+            this.fontSize = parseInt(data[10] * flax.resolution);
             this.fontColor = data[11];
             //cocos color
             if(FRAMEWORK == "cocos") this.fontColor = cc.hexToColor(this.fontColor);
             this.textAlign = H_ALIGHS.indexOf(data[12]);
-            this.textWidth = parseFloat(data[13]);
-            this.textHeight = parseFloat(data[14]);
+            this.textWidth = parseFloat(data[13]) * flax.resolution;
+            this.textHeight = parseFloat(data[14]) * flax.resolution;
         }
     },
     setForChild:function(child)
@@ -88,13 +88,10 @@ flax.FrameData = flax.Class.extend({
                 child.setFontName(this.font);
                 child.setFontFillColor(this.fontColor);
                 child.setHorizontalAlignment(this.textAlign);
-                child.setDimensions({width: this.textWidth, height:this.textHeight});
+                child.setDimensions(this.textWidth, this.textHeight);
                 //todo: fix the bug of cocos: no update when the font color changed
                 child.setFontSize(this.fontSize - 1);
                 child.setFontSize(this.fontSize);
-                //ttf position offset
-                x += this.textWidth/2;
-                y -= this.textHeight/2;
             //PIXI.Text
             } else {
                 var styleNow = child.style;
@@ -311,14 +308,14 @@ flax._movieClip = {
         this._super();
         this.setContentSize(this._gRect.width, this._gRect.height);
     },
-    addChild: function (child, localZOrder, tag) {
-        this._super(child, localZOrder, tag);
-        if(!child.name || (this.namedChildren && !this.namedChildren[child.name])) {
-            if (!this._extraChildren) this._extraChildren = [];
-            child.__eIndex = localZOrder || this.childrenCount - 1;
-            this._extraChildren.push(child);
-        }
-    },
+    //addChild: function (child, localZOrder, tag) {
+    //    this._super(child, localZOrder, tag);
+    //    if(!child.name || (this.namedChildren && !this.namedChildren[child.name])) {
+    //        if (!this._extraChildren) this._extraChildren = [];
+    //        child.__eIndex = localZOrder || this.childrenCount - 1;
+    //        this._extraChildren.push(child);
+    //    }
+    //},
     addChildAt: function (child, index) {
         this._super(child, index);
         if(!child.name || (this.namedChildren && !this.namedChildren[child.name])) {

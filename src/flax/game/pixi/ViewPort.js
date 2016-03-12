@@ -43,36 +43,39 @@ flax.view = {
     },
     updateView: function () {
 
-        var sx = 1.0;
-        var sy = 1.0;
+        //var sx = 1.0;
+        //var sy = 1.0;
 
-        var ws = window.innerWidth/this._width;
-        var hs = window.innerHeight/this._height;
+        //var ws = window.innerWidth/this._width;
+        //var hs = window.innerHeight/this._height;
+        //
+        //switch(this._resolutionPolicy){
+        //    case flax.ResolutionPolicy.EXACT_FIT:
+        //        sx = ws;
+        //        sy = hs;
+        //        break;
+        //    case flax.ResolutionPolicy.NO_BORDER:
+        //        sx = sy = ws;
+        //        if(hs > ws) sx = sy = hs;
+        //        break;
+        //    case flax.ResolutionPolicy.SHOW_ALL:
+        //        sx = sy = ws;
+        //        if(hs < ws) sx = sy = hs;
+        //        break;
+        //    case flax.ResolutionPolicy.FIXED_HEIGHT:
+        //        //todo
+        //        break;
+        //    case flax.ResolutionPolicy.FIXED_WIDTH:
+        //        //todo
+        //        break;
+        //    case flax.ResolutionPolicy.UNKNOWN:
+        //        //todo
+        //        break;
+        //}
+        //flax.director.setScale(sx, sy);
 
-        switch(this._resolutionPolicy){
-            case flax.ResolutionPolicy.EXACT_FIT:
-                sx = ws;
-                sy = hs;
-                break;
-            case flax.ResolutionPolicy.NO_BORDER:
-                sx = sy = ws;
-                if(hs > ws) sx = sy = hs;
-                break;
-            case flax.ResolutionPolicy.SHOW_ALL:
-                sx = sy = ws;
-                if(hs < ws) sx = sy = hs;
-                break;
-            case flax.ResolutionPolicy.FIXED_HEIGHT:
-                //todo
-                break;
-            case flax.ResolutionPolicy.FIXED_WIDTH:
-                //todo
-                break;
-            case flax.ResolutionPolicy.UNKNOWN:
-                //todo
-                break;
-        }
-        flax.director.setScale(sx, sy);
+        var scale = flax.getGameScale();
+        flax.director.setScale(scale.x, scale.y);
     },
     getResolutionPolicy: function () {
         return this._resolutionPolicy;

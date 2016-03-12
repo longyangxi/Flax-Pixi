@@ -65,3 +65,8 @@ flax.playSound = function(path)
 {
     return flax.playEffect(path);
 };
+
+flax.setMusicVolume = function(volume){
+    var audioEngine = cc.audioEngine;
+    audioEngine.setMusicVolume(volume);
+}

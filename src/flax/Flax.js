@@ -8,12 +8,16 @@ window['flax'] = flax;
 flax.frameInterval = 1/60;
 flax.stage = null;
 flax.stageRect = null;
+flax.resolutionPolicy = null;
 flax.designedStageSize = null;
 
 flax._rendererOptions = null;
 
-var ua = window.navigator.userAgent.toLowerCase();
-flax.isMobile = ua.indexOf('mobile') !== -1 || ua.indexOf('android') !== -1;
+flax.isMobile = false;
+if(window.navigator) {
+    var ua = window.navigator.userAgent.toLowerCase();
+    flax.isMobile = ua.indexOf('mobile') !== -1 || ua.indexOf('android') !== -1;
+}
 
 if(FRAMEWORK == "cocos"){
     flax.Sprite = cc.Sprite;
@@ -133,6 +137,8 @@ flax._setupModules = function()
 flax._setupView = function (resolutionPolicy, designWidth, designHeight) {
 
     if(resolutionPolicy == null) resolutionPolicy = flax.sys.isMobile ? flax.ResolutionPolicy.NO_BORDER : flax.ResolutionPolicy.SHOW_ALL;
+
+    flax.resolutionPolicy = resolutionPolicy;
 
     var width = designWidth ? designWidth : flax.game.config["width"];
     var height = designHeight ? designHeight: flax.game.config["height"];

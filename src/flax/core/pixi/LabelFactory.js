@@ -95,7 +95,7 @@ flax.createLabel = function(assetsFile, data, define)
     if(define.input == true){
 
         var style = {
-            font: data.fontSize + "px " + data.font,
+            font: data.fontSize + "px " + data.font * flax.resolution,
             fill: data.fontColor,
             align: data.textAlign,
             //wordWrap: true,
@@ -112,7 +112,7 @@ flax.createLabel = function(assetsFile, data, define)
     else if(data.font && bmpFontName == null){
 
         var style = {
-            font: data.fontSize + "px " + data.font,
+            font: data.fontSize + "px " + data.font * flax.resolution,
             fill: data.fontColor,
             align: H_ALIGHS[data.textAlign],
             wordWrap: true,

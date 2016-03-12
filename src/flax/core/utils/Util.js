@@ -26,6 +26,43 @@ flax.isWebGLSupported = function ()
         return false;
     }
 }
+
+flax.getGameScale = function () {
+
+    var sx = 1.0;
+    var sy = 1.0;
+
+    var size = flax.designedStageSize;
+
+    var ws = window.innerWidth/size.width;
+    var hs = window.innerHeight/size.height;
+
+    switch(flax.resolutionPolicy){
+        case flax.ResolutionPolicy.EXACT_FIT:
+            sx = ws;
+            sy = hs;
+            break;
+        case flax.ResolutionPolicy.NO_BORDER:
+            sx = sy = ws;
+            if(hs > ws) sx = sy = hs;
+            break;
+        case flax.ResolutionPolicy.SHOW_ALL:
+            sx = sy = ws;
+            if(hs < ws) sx = sy = hs;
+            break;
+        case flax.ResolutionPolicy.FIXED_HEIGHT:
+            //todo
+            break;
+        case flax.ResolutionPolicy.FIXED_WIDTH:
+            //todo
+            break;
+        case flax.ResolutionPolicy.UNKNOWN:
+            //todo
+            break;
+    }
+    return {x: sx, y: sy};
+}
+
 flax.isDisplay = function (target) {
     if(FRAMEWORK == "cocos") return target instanceof cc.Node;
     if(FRAMEWORK == "pixi") return target instanceof PIXI.DisplayObject;

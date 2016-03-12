@@ -7,13 +7,14 @@ var flax  = flax || {};
 if(!flax.Module) flax.Module = {};
 
 flax.Module.Draggable = {
-
     xDraggable:true,
     yDraggable:true,
     dragEnabled:true,
+    tweenEnabled:true,
     _boundsView:null,
     _viewRect:null,
     _inDragging:false,
+    _dragSpeed:null,
     _lastPos:null,
     _anchorPos:null,
     _p:null,
@@ -24,6 +25,8 @@ flax.Module.Draggable = {
         if(view == null) view = this.getCollider("mask");
         this._boundsView = view;
 
+        this._dragSpeed = flax.p();
+
         flax.inputManager.addListener(this, this._startDrag, InputType.press, this);
         flax.inputManager.addListener(this, this._drag, InputType.move, this);
         flax.inputManager.addListener(this, this._stopDrag, InputType.up, this);
@@ -33,10 +36,12 @@ flax.Module.Draggable = {
         this.xDraggable = true;
         this.yDraggable = true;
         this.dragEnabled = true;
+        this.tweenEnabled = true;
         this._boundsView = null;
         this._viewRect = null;
         this._lastPos = null;
         this._anchorPos = null;
+        this._dragSpeed = null;
         this._p = null;
     },
     /**
@@ -63,6 +68,8 @@ flax.Module.Draggable = {
         if(!this.dragEnabled) return;
         this._inDragging = true;
         this._lastPos = touch.getLocation();
+        if(this.onStartDrag) this.onStartDrag();
+        this._stopTween();
     },
     _drag:function(touch, event){
 
@@ -75,12 +82,16 @@ flax.Module.Draggable = {
         deltaX = (deltaX > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaX));
         deltaY = (deltaY > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaY));
 
+        this._dragSpeed.x = deltaX * this.fps;
+        this._dragSpeed.y = deltaY * this.fps;
+
         this.dragBy(deltaX, deltaY);
 
         this._lastPos = newPos;
     },
     _stopDrag:function(touch, event){
         this._inDragging = false;
+        if(this.tweenEnabled) this._startTween();
     },
     dragBy: function (deltaX, deltaY) {
 
@@ -107,5 +118,19 @@ flax.Module.Draggable = {
         this.setPosition(this._p);
 
         return deltaX != 0 || deltaY != 0;
+    },
+    _startTween: function () {
+        this.schedule(this._doTween, flax.frameInterval);
+    },
+    _stopTween: function () {
+        this.unschedule(this._doTween);
+    },
+    _doTween: function (delta) {
+        this._dragSpeed.x *= 0.95;
+        this._dragSpeed.y *= 0.95;
+        var speed = flax.pLength(this._dragSpeed);
+        if(speed < this.fps || !this.dragBy(this._dragSpeed.x * delta, this._dragSpeed.y * delta)) {
+            this._stopTween();
+        }
     }
 };

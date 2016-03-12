@@ -6,15 +6,21 @@ var flax = flax || {};
 
 flax.ListView = flax.MovieClip.extend({
     gap:null,
+    cgap:null,
     margin:0,
     dataArray:null,
     viewArray:null,
+    _clickInited:false,
+    _columns:1,
     _yDirection:true,
     _itemSize:0,
+    _citemSize:0,
     _originSize:0,
+    _blankFilled:false,
     _totalSize:0,
     _visibleSize:0,
     _originPos:0,
+    _startPos:0,
     _viewAnchorX:0,
     _viewAnchorY:0,
     _currentPos:0,
@@ -33,25 +39,54 @@ flax.ListView = flax.MovieClip.extend({
         var self = this;
 
         var children = this.children.concat();
+
+        //Sort the children from top to bottom
         children.sort(function (a, b) {
-            //todo
-            return self._yDirection ? (a.getPositionY() < b.getPositionY()) : (a.getPositionX() < b.getPositionX());
+            return self._yDirection ? (Y_DIRECTION > 0 ? a.y > b.y : a.y < b.y) : (a.x < b.x);
         });
 
         this._totalSize = 0;
 
+        var firstItem = null;
+        this._columns = 1;
+
         for(var i = 0; i < this.childrenCount; i++) {
             var item = children[i];
+
             if(this._itemSize == 0) {
                 this._itemSize = this._yDirection ? item.height : item.width;
+                this._startPos = this._yDirection ? item.x : item.y;
                 //if(typeof item.setData !== "function") throw "List item must implement setData function!"
             }
-            if(i > 0 && this.gap == null) {
-                if(this._yDirection) this.gap = children[i - 1].getPositionY() - item.getPositionY() - this._itemSize;
-                else this.gap = item.getPositionX() - children[i - 1].getPositionX() - this._itemSize;
+
+            if(firstItem == null) {
+                firstItem = item;
+            } else {
+                //find the items within the same column
+                var delta = this._yDirection ? Math.abs(firstItem.y - item.y) : Math.abs(firstItem.x - item.x);
+                if (delta < 10) {
+                    this._columns++;
+                }
+            }
+
+            if(i == 1) {
+                if(this._columns == 2) {
+                    this._citemSize = this._yDirection ? item.width : item.height;
+                    if(this._yDirection) this.cgap = item.x - firstItem.x - this._citemSize;
+                    else this.cgap = Y_DIRECTION*(item.y - firstItem.y) - this._citemSize;
+                } else {
+                    if(this._yDirection) this.gap = Y_DIRECTION*(item.y - firstItem.y) - this._itemSize;
+                    else this.gap = item.x - firstItem.x - this._itemSize;
+                }
             }
             this._totalSize += (this._yDirection ? item.height : item.width) + this.gap;
             this.viewArray.push(item);
+        }
+
+        if(this._columns > 1) {
+            var item = children[this._columns];
+            if(this._yDirection) this.gap = Y_DIRECTION*(item.y - firstItem.y) - this._itemSize;
+            else this.gap = item.x - firstItem.x - this._itemSize;
         }
 
         this._originSize = this._yDirection ? this.height : this.width;
@@ -60,13 +95,6 @@ flax.ListView = flax.MovieClip.extend({
         this._currentPos = this._originPos;
 
         this.onNewPosition();
-
-        //todo
-        this.scheduleOnce(function () {
-            var rect = this.getCollider("mask").getRect(true);
-            this._visibleSize = this._yDirection ? rect.height : rect.width;
-            this.setClickArea(rect);
-        }, 0.01);
     },
     onExit: function () {
         this._super();
@@ -81,8 +109,14 @@ flax.ListView = flax.MovieClip.extend({
         this._currentIndex = -1;
         this._currentPos = 0;
         this.margin = 0;
+        this._columns = 1;
+        this._citemSize = 0;
+        this._visibleSize = 0;
+        this._blankFilled = false;
+        this._clickInited = false;
     },
-    refresh: function () {
+    refresh: function (dataArr) {
+        if(dataArr) this.dataArray = dataArr;
         this._currentIndex = -1;
         this.onNewPosition();
     },
@@ -182,14 +216,22 @@ flax.ListView = flax.MovieClip.extend({
             this.dragEnabled = true;
         }
     },
-    onNewPosition: function () {
+    onStartDrag: function () {
+        if(!this._clickInited) {
+            var rect = this.getCollider("mask").getRect(true);
+            this._visibleSize = this._yDirection ? rect.height : rect.width;
+            this.setClickArea(rect);
+            this._clickInited = true;
+        }
+    },
+    onNewPosition: function (dx, dy) {
 
         if(!this.viewArray) return;
 
         var itemSize = this._itemSize + this.gap;
 
         if(this.dataArray) {
-            this._totalSize = itemSize * this.dataArray.length;
+            this._totalSize = itemSize * Math.ceil(this.dataArray.length / this._columns);
         }
 
         //Cal the view anchor
@@ -214,10 +256,9 @@ flax.ListView = flax.MovieClip.extend({
         if(this.dataArray) {
 
             //auto fill the blank area
-            if(this._originSize < this._visibleSize + this._itemSize + this.gap) {
-                this._fillTheBlank();
-                this._originSize += this._itemSize + this.gap;
-                this._totalSize += this._itemSize + this.gap;
+            if(this._originSize < this._visibleSize + this._itemSize + this.gap && !this._blankFilled) {
+                this._fillItem();
+                this._blankFilled = true;
             }
 
             var dataIndex = Math.floor(scrolled / itemSize);
@@ -229,23 +270,12 @@ flax.ListView = flax.MovieClip.extend({
                     var direction = flax.numberSign(newPos - this._currentPos);
                     if(this._yDirection) direction *= Y_DIRECTION;
 
-                    if(direction < 0) {
-                        var item = this.viewArray.shift();
-                        var lastItem = this.viewArray[this.viewArray.length - 1];
-                        var lastSize = (this._yDirection ? lastItem.height : lastItem.width) + this.gap;
-                        this._yDirection ? item.setPositionY(lastItem.getPositionY() - lastSize) : item.setPositionX(lastItem.getPositionX() - lastSize);
-                        this.viewArray.push(item);
-                    } else {
-                        var item = this.viewArray.pop();
-                        var firstItem = this.viewArray[0];
-                        var firstSize = (this._yDirection ? firstItem.height : firstItem.width) + this.gap;
-                        this._yDirection ? item.setPositionY(firstItem.getPositionY() + firstSize) : item.setPositionX(firstItem.getPositionX() + firstSize);
-                        this.viewArray.unshift(item);
-                    }
+                    this._fillItem(direction);
+
                 }
                 for(var i = 0; i < this.viewArray.length; i++) {
                     var item = this.viewArray[i];
-                    var data = this.dataArray[i + dataIndex];
+                    var data = this.dataArray[i + dataIndex * this._columns];
                     if(data && item.setData) item.setData(data, i);
                     item.visible = data != null;
                 }
@@ -255,12 +285,37 @@ flax.ListView = flax.MovieClip.extend({
 
         this._currentPos = newPos;
     },
-    _fillTheBlank: function () {
-        var item = this.viewArray[this.viewArray.length - 1];
-        var itemSizeWithGap = this._itemSize + this.gap;
-        var cItem = flax.assetsManager.cloneDisplay(item, false, true);
-        this._yDirection ? cItem.setPositionY(item.getPositionY() - itemSizeWithGap) : cItem.setPositionX(item.getPositionX() - itemSizeWithGap);
-        this.viewArray.push(cItem);
+    _fillItem: function (direction) {
+
+        var fromPool = true;
+        if(direction == null) {
+            direction = -1;
+            fromPool = false;
+        }
+
+        var lastItem = this.viewArray[this.viewArray.length - 1];
+        var firstPos = this.viewArray[0].getPosition();
+        var lastPos = lastItem.getPosition();
+
+        var s = this._itemSize + this.gap;
+        var cs = this._citemSize + this.cgap;
+
+        for(var i = 0; i < this._columns; i++) {
+
+            var cItem = null;
+
+            if(fromPool) cItem = direction < 0 ? this.viewArray.shift() : this.viewArray.pop();
+            else cItem = flax.assetsManager.cloneDisplay(lastItem, false, true);
+
+            if(direction < 0) {
+                this._yDirection ? cItem.setPositionY(lastPos.y + Y_DIRECTION * s) : cItem.setPositionX(lastPos.x - s);
+                this.viewArray.push(cItem);
+            } else {
+                this._yDirection ? cItem.setPositionY(firstPos.y - Y_DIRECTION *  s) : cItem.setPositionX(firstPos.x + s);
+                this.viewArray.unshift(cItem);
+            }
+            this._yDirection ? cItem.setPositionX(this._startPos + i * cs) : cItem.setPositionY(this._startPos + Y_DIRECTION * i * cs);
+        }
     }
 })
 

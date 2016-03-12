@@ -330,6 +330,10 @@ flax.Module.Collider = {
     setClickArea: function (rect) {
         if(this._mainCollider) this._mainCollider._clickArea = rect;
     },
+    getClickArea: function () {
+        if(this._mainCollider) return this._mainCollider._clickArea;
+        return null
+    },
     mainCollider:{
         get: function () {
             return this._mainCollider;

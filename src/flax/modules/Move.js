@@ -121,7 +121,7 @@ flax.Module.Move = {
         var pos = this.getPosition();
         var dis = this._targetPos ? flax.pDistance(pos, this._targetPos) : Number.maxValue;
         var deltaDis = this._moveSpeedLen*delta;
-        if(dis < deltaDis || (this.destroyWhenOutofStage && !flax.rectContainsRect(flax.stageRect, flax.getBounds(this, true)))){
+        if(dis <= deltaDis || (this.destroyWhenOutofStage && !flax.rectContainsRect(flax.stageRect, flax.getBounds(this, true)))){
             this.stopMove();
             this._moveOver();
         }else{
