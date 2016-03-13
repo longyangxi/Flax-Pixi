@@ -728,7 +728,10 @@ flax._sprite = {
             var pool = flax.ObjectPool.get(this.assetsFile, this.clsName, this.__pool__id__ || "");
             pool.recycle(this);
         }
-        this.removeFromParent();
+        //todo, handlle destroy in pixi
+        //if(FRAMEWORK == "cocos") this.removeFromParent();
+        //else this._super();
+        this.removeFromParent()
         this.autoRecycle = false;
     },
     /**

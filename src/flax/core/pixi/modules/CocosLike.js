@@ -20,13 +20,7 @@ flax.Module.CocosLike = {
         if(this.anchor == null) this.anchor = new flax.p();
         this.running = true;
         if(!this.children) this.children = [];
-        var children = this.children;
-        var num = children.length;
-        for(var i = 0; i < num; i++)
-        {
-            var child = children[i];
-            child.onEnter();
-        }
+        this._childrenEnter();
         if(this._toIndex != null) {
             this.parent.setChildIndex(this, this._toIndex);
             this._toIndex = null;
@@ -165,6 +159,15 @@ flax.Module.CocosLike = {
     },
     getAnchorPointInPoints: function () {
         return new flax.p(this.width*this.anchor.x, this.height*this.anchor.y);
+    },
+    _childrenEnter: function () {
+        var children = this.children;
+        var num = children.length;
+        for(var i = 0; i < num; i++)
+        {
+            var child = children[i];
+            child.onEnter();
+        }
     }
 }
 

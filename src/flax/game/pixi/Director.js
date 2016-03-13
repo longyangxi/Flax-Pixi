@@ -65,13 +65,17 @@ flax.Director = flax.Class.extend({
                 this.renderer.destroy(true);
                 this.renderer = null;
             }
-            flax.stage = null;
+            if(flax.stage) {
+                //flax.stage.destroy();
+                flax.stage = null;
+            }
             this.renderer = flax.setupRenderer(renderMode);
             needUpdateScale = true;
         }
 
         if(!flax.stage) {
             flax.stage = new flax.Container();
+            flax.stage.running = true;
             flax.scheduler.scheduleUpdate(this);
         }
         return needUpdateScale;
@@ -92,7 +96,9 @@ flax.Director = flax.Class.extend({
         return flax.scheduler.isPaused();
     },
     update: function (delta) {
-        if(this.renderer) this.renderer.render(flax.stage);
+        if(this.renderer) {
+            this.renderer.render(flax.stage);
+        }
     },
     _updateScale: function () {
 

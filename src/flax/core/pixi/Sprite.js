@@ -13,8 +13,24 @@ flax.addModule(PIXI.Container, flax.Module.Schedule);
 flax.addModule(PIXI.Container, flax.Module.Action);
 
 PIXI.Container.prototype.removeAllChildren = PIXI.Sprite.prototype.removeChildren;
-PIXI.Container.prototype.convertToWorldSpace = PIXI.Sprite.prototype.toGlobal;
-PIXI.Container.prototype.convertToNodeSpace = PIXI.Sprite.prototype.toLocal;
+//PIXI.Container.prototype.convertToWorldSpace = PIXI.Sprite.prototype.toGlobal;
+PIXI.Container.prototype.convertToWorldSpace = function (pos) {
+    pos = this.toGlobal(pos);
+    if(flax.__scene_ready) {
+        pos = flax.currentScene.toLocal(pos);
+    }
+    return pos;
+}
+
+//PIXI.Container.prototype.convertToNodeSpace = PIXI.Sprite.prototype.toLocal;
+PIXI.Container.prototype.convertToNodeSpace = function (pos, from) {
+    if(flax.__scene_ready) {
+        pos = flax.currentScene.toGlobal(pos);
+    }
+    pos = this.toLocal(pos, from);
+    return pos;
+}
+
 PIXI.Container.prototype.getContentSize = PIXI.Sprite.prototype.getBounds;
 PIXI.Container.prototype.setContentSize = function(){/*do nothing*/};
 /**
@@ -26,12 +42,6 @@ PIXI.Container.prototype.updateTransform = function ()
     {
         return;
     }
-
-    //TODO, Fixed the bug of incorrect scale of the Graphics when screen resize
-    //if(this instanceof PIXI.Graphics && flax.director) {
-        //this.scaleX = 1/flax.director.scaleX;
-        //this.scaleY = 1/flax.director.scaleY;
-    //}
 
     this.displayObjectUpdateTransform();
 
@@ -48,15 +58,12 @@ PIXI.Container.prototype.updateTransform = function ()
     }
 
     if(this.scale.x == undefined) {
-        throw "error"
+        throw "The scale of a DisplayObject must be a Point!"
     }
 };
 
 // performance increase to avoid using call.. (10x faster)
 PIXI.Container.prototype.containerUpdateTransform = PIXI.Container.prototype.updateTransform;
-
-//PIXI.Container.prototype.onChildrenChange = function (index) {
-//}
 
 PIXI.Container.prototype.addChildAt = function (child, index)
 {
@@ -194,5 +201,12 @@ flax.Text = PIXI.Text.extend({
 
 flax.Scene = flax.Container.extend({
     name:null,
+    onEnter: function () {
+        this._super();
+        flax.__scene_ready = false;
+        this.scheduleOnce(function () {
+            flax.__scene_ready = true;
+        }, 0.01);
+    }
     //todo more
 })

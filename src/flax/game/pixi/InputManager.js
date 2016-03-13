@@ -152,6 +152,7 @@ flax.InputManager = flax.Container.extend({
         if(target == null) target = this;
         if(type) target.removeListener(type, func, context);
         else target.removeAllListeners(type);
+        target.interactive = false;
     },
     removeAllTouchListeners:function()
     {
