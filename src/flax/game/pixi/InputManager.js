@@ -37,9 +37,12 @@ flax.InputManager = flax.Container.extend({
     justDragged:false,
     justDragDist:0,
     justDragOff:0,
+    /**
+     * If set, only the target can receive the touch event
+     * */
+    soleTarget:null,
     _touchBeginPos:null,
     _callbacks:{},
-    _touchListeners:null,
     _keyboardCallbacks:{},
     _keyboardListener:null,
 
@@ -48,7 +51,6 @@ flax.InputManager = flax.Container.extend({
         this._super();
         this.inTouching = false;
         this._callbacks = {};
-        this._touchListeners = {};
         this._keyboardCallbacks = {};
         this._keyboardListener = null;
     },
@@ -112,7 +114,7 @@ flax.InputManager = flax.Container.extend({
         this._callbacks = null;
         this._keyboardCallbacks = null;
         this._keyboardListener = null;
-        this._touchListeners = null;
+        this.soleTarget = null;
     },
     /**
      * @param{cc.Node} target the target want to receive the touch event, if target is null, then global event will be triggered
@@ -144,24 +146,92 @@ flax.InputManager = flax.Container.extend({
 
         if(type == null) type = InputType.click;
 
+        if(target.__instanceId == null) target.__instanceId = flax.getInstanceId();
+
+        var arr = this._callbacks[target.__instanceId];
+        if(arr == null){
+            arr = [];
+            this._callbacks[target.__instanceId] = arr;
+            if(target != this) {
+                //var listener =  this._createListener(target, this.swallowTouches);
+                //this._touchListeners[target.__instanceId] = listener;
+            }
+        }
+        //Make sure no duplicated listener
+        var i = arr.length;
+        while(i--){
+            if(arr[i].type == type && arr[i].func == func)  return;
+        }
+        var callback = {target:target, type:type, func:func, context:context || target};
+        arr.push(callback);
+
         target.interactive = true;
-        target.on(type, func, context);
+        target.on(type, function(event) {
+            if(this.soleTarget && this.soleTarget != event.target) return;
+            //todo, memory leak possible if not destroy?
+            var touch = new flax.Touch(event);
+            event.currentTarget = event.target;
+            func.apply(context, [touch, event]);
+            if(event.type == InputType.press) {
+                if(this.soleTarget) this.soleTarget = null;
+            }
+        }, context);
     },
     removeListener:function(target, func, type, context)
     {
+        if(!this.parent) return;
         if(target == null) target = this;
+        var calls = this._callbacks[target.__instanceId];
+        if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {
+            if(this.soleTarget == target) this.soleTarget = null;
+            var call = null;
+            var i = calls.length;
+            if(func || type) {
+                while(i--){
+                    call = calls[i];
+                    if((!type || call.type == type) && (!func || call.func == func)) {
+                        calls.splice(i, 1);
+                    }
+                }
+            }
+            if(calls.length == 0 || (!func && !type)){
+                delete this._callbacks[target.__instanceId];
+//                var listener = this._touchListeners[target.__instanceId];
+//                if(listener){
+//                    //todo,3.5 cause Invalid native object error!
+////                        cc.eventManager.removeListener(listener);
+//                    delete this._touchListeners[target.__instanceId];
+//                }
+            }
+        }
+        if(func && (type == null || type == InputType.keyPress || type == InputType.keyUp)){
+            if(type == null) {
+                calls = this._keyboardCallbacks[InputType.keyPress] || [];
+                calls = calls.concat(this._keyboardCallbacks[InputType.keyUp] || []);
+            }else{
+                calls = this._keyboardCallbacks[type];
+            }
+            if(calls && calls.length){
+                var call = null;
+                var i = calls.length;
+                while(i--){
+                    call = calls[i];
+                    if(call.func == func) calls.splice(i, 1);
+                }
+            }
+        }
+
         if(type) target.removeListener(type, func, context);
         else target.removeAllListeners(type);
-        target.interactive = false;
     },
     removeAllTouchListeners:function()
     {
+        for(var id in this._callbacks){
+            var callback = this._callbacks[id];
+            callback.target.removeListener(callback.type, callback.func, callback.context);
+        }
+        this.soleTarget = null;
         this._callbacks = {};
-        //for(var id in this._touchListeners){
-        //    var listener = this._touchListeners[id];
-        //    cc.eventManager.removeListener(listener);
-        //    delete this._touchListeners[id];
-        //}
     },
     removeAllKeyboardListeners:function()
     {
@@ -172,8 +242,6 @@ flax.InputManager = flax.Container.extend({
     }
 });
 
-flax.inputManager = new flax.InputManager();
-
 flax.addListener = function(target, func, type, context)
 {
     flax.inputManager.addListener(target, func, type, context);
@@ -183,3 +251,22 @@ flax.removeListener = function(target, func, type)
 {
     flax.inputManager.removeListener(target, func, type);
 }
+
+flax.Touch = flax.Class.extend({
+    _event:null,
+    _location:null,
+    ctor: function (event) {
+        this._event = event;
+    },
+    getLocation: function () {
+        if(this._location == null) {
+            this._location = this._event.data.global;
+            this._location = flax.currentScene.toLocal(this._location);
+        }
+        return this._location;
+    },
+    destroy: function () {
+        this._event = null;
+        this._location = null;
+    }
+})

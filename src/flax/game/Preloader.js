@@ -44,7 +44,9 @@ flax.AbstractPreloader = flax.Scene.extend({
        //to be override
     },
     onLoadComplete: function () {
-        if(flax.inputManager) flax.inputManager.removeFromParent();
+        if(flax.inputManager) {
+            flax.inputManager.removeFromParent();
+        }
         if (this.callback)
         {
             this.callback.apply(self.context);

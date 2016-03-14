@@ -235,7 +235,8 @@ flax.InputManager = cc.Node.extend({
             return;
         }
 
-        type = (type == null) ? InputType.click : type;
+        if(type == null) type = InputType.click;
+
         if(target.__instanceId == null) target.__instanceId = flax.getInstanceId();
         var arr = this._callbacks[target.__instanceId];
         if(arr == null){
@@ -261,27 +262,25 @@ flax.InputManager = cc.Node.extend({
         var calls = this._callbacks[target.__instanceId];
         if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {
             if(this.soleTarget == target) this.soleTarget = null;
-//            this.scheduleOnce(function(){
-                var call = null;
-                var i = calls.length;
-                if(func || type) {
-                    while(i--){
-                        call = calls[i];
-                        if((!type || call.type == type) && (!func || call.func == func)) {
-                            calls.splice(i, 1);
-                        }
+            var call = null;
+            var i = calls.length;
+            if(func || type) {
+                while(i--){
+                    call = calls[i];
+                    if((!type || call.type == type) && (!func || call.func == func)) {
+                        calls.splice(i, 1);
                     }
                 }
-                if(calls.length == 0 || (!func && !type)){
-                    delete this._callbacks[target.__instanceId];
-                    var listener = this._touchListeners[target.__instanceId];
-                    if(listener){
-                        //todo,3.5 cause Invalid native object error!
+            }
+            if(calls.length == 0 || (!func && !type)){
+                delete this._callbacks[target.__instanceId];
+                var listener = this._touchListeners[target.__instanceId];
+                if(listener){
+                    //todo,3.5 cause Invalid native object error!
 //                        cc.eventManager.removeListener(listener);
-                        delete this._touchListeners[target.__instanceId];
-                    }
+                    delete this._touchListeners[target.__instanceId];
                 }
-//            },0.01);
+            }
         }
         if(func && (type == null || type == InputType.keyPress || type == InputType.keyUp)){
             if(type == null) {
@@ -291,14 +290,12 @@ flax.InputManager = cc.Node.extend({
                 calls = this._keyboardCallbacks[type];
             }
             if(calls && calls.length){
-//                this.scheduleOnce(function(){
-                    var call = null;
-                    var i = calls.length;
-                    while(i--){
-                        call = calls[i];
-                        if(call.func == func) calls.splice(i, 1);
-                    }
-//                },0.01);
+                var call = null;
+                var i = calls.length;
+                while(i--){
+                    call = calls[i];
+                    if(call.func == func) calls.splice(i, 1);
+                }
             }
         }
     },
@@ -309,7 +306,6 @@ flax.InputManager = cc.Node.extend({
             var listener = this._touchListeners[id];
             cc.eventManager.removeListener(listener);
             delete this._touchListeners[id];
-
         }
     },
     removeAllKeyboardListeners:function()
@@ -329,7 +325,7 @@ flax.InputManager = cc.Node.extend({
 
         var target = event.getCurrentTarget();
 
-        //if(this.soleTarget && this.soleTarget != target) return false;
+        if(this.soleTarget && this.soleTarget != target) return false;
 
         if(!flax.ifTouchValid(target, touch)) return false;
 

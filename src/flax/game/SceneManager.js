@@ -81,6 +81,11 @@ flax.replaceScene = function(sceneName, transition, duration)
         flax.currentScene = new s.scene();
         flax.currentScene.name = sceneName;
 
+        if (flax.InputManager) {
+            flax.inputManager = new flax.InputManager();
+            flax.currentScene.addChild(flax.inputManager, 999999);
+        }
+
         if (flax.device) flax.device.init();
 
         var transitioned = false;
@@ -97,11 +102,6 @@ flax.replaceScene = function(sceneName, transition, duration)
         }
 
         if(flax.device) flax.device.showTipTop();
-
-        if (flax.InputManager) {
-            flax.inputManager = new flax.InputManager();
-            flax.currentScene.addChild(flax.inputManager, 999999);
-        }
 
         flax.onSceneEnter.dispatch(flax.currentSceneName);
     });
