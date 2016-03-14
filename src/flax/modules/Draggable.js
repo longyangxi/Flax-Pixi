@@ -126,8 +126,8 @@ flax.Module.Draggable = {
         this.unschedule(this._doTween);
     },
     _doTween: function (delta) {
-        this._dragSpeed.x *= 0.95;
-        this._dragSpeed.y *= 0.95;
+        this._dragSpeed.x *= 0.9;
+        this._dragSpeed.y *= 0.9;
         var speed = flax.pLength(this._dragSpeed);
         if(speed < this.fps || !this.dragBy(this._dragSpeed.x * delta, this._dragSpeed.y * delta)) {
             this._stopTween();

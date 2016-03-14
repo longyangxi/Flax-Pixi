@@ -255,35 +255,41 @@ flax.ListView = flax.MovieClip.extend({
 
         if(this.dataArray) {
 
+            var dataIndex = Math.floor(scrolled / itemSize);
+
+            var toUpdateData = false;
+
             //auto fill the blank area
             if(this._originSize < this._visibleSize + this._itemSize + this.gap && !this._blankFilled) {
                 this._fillItem();
                 this._blankFilled = true;
+                toUpdateData = true;
             }
 
-            var dataIndex = Math.floor(scrolled / itemSize);
-
             if(this._currentIndex != dataIndex) {
-
                 if(this._currentIndex >= 0) {
 
                     var direction = flax.numberSign(newPos - this._currentPos);
                     if(this._yDirection) direction *= Y_DIRECTION;
 
                     this._fillItem(direction);
-
-                }
-                for(var i = 0; i < this.viewArray.length; i++) {
-                    var item = this.viewArray[i];
-                    var data = this.dataArray[i + dataIndex * this._columns];
-                    if(data && item.setData) item.setData(data, i);
-                    item.visible = data != null;
                 }
                 this._currentIndex = dataIndex;
+                toUpdateData = true;
             }
+
+            if(toUpdateData) this._updateData();
         }
 
         this._currentPos = newPos;
+    },
+    _updateData: function () {
+        for(var i = 0; i < this.viewArray.length; i++) {
+            var item = this.viewArray[i];
+            var data = this.dataArray[i + this._currentIndex * this._columns];
+            if(data && item.setData) item.setData(data, i);
+            item.visible = data != null;
+        }
     },
     _fillItem: function (direction) {
 
