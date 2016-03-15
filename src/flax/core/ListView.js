@@ -35,62 +35,12 @@ flax.ListView = flax.MovieClip.extend({
         this._super();
 
         this.viewArray = [];
-
-        var self = this;
-
-        var children = this.children.concat();
-
-        //Sort the children from top to bottom
-        children.sort(function (a, b) {
-            return self._yDirection ? (Y_DIRECTION > 0 ? a.y > b.y : a.y < b.y) : (a.x < b.x);
-        });
-
         this._totalSize = 0;
-
-        var firstItem = null;
         this._columns = 1;
 
-        for(var i = 0; i < this.childrenCount; i++) {
-            var item = children[i];
-
-            if(this._itemSize == 0) {
-                this._itemSize = this._yDirection ? item.height : item.width;
-                this._startPos = this._yDirection ? item.x : item.y;
-                //if(typeof item.setData !== "function") throw "List item must implement setData function!"
-            }
-
-            if(firstItem == null) {
-                firstItem = item;
-            } else {
-                //find the items within the same column
-                var delta = this._yDirection ? Math.abs(firstItem.y - item.y) : Math.abs(firstItem.x - item.x);
-                if (delta < 10) {
-                    this._columns++;
-                }
-            }
-
-            if(i == 1) {
-                if(this._columns == 2) {
-                    this._citemSize = this._yDirection ? item.width : item.height;
-                    if(this._yDirection) this.cgap = item.x - firstItem.x - this._citemSize;
-                    else this.cgap = Y_DIRECTION*(item.y - firstItem.y) - this._citemSize;
-                } else {
-                    if(this._yDirection) this.gap = Y_DIRECTION*(item.y - firstItem.y) - this._itemSize;
-                    else this.gap = item.x - firstItem.x - this._itemSize;
-                }
-            }
-            this._totalSize += (this._yDirection ? item.height : item.width) + this.gap;
-            this.viewArray.push(item);
-        }
-
-        if(this._columns > 1) {
-            var item = children[this._columns];
-            if(this._yDirection) this.gap = Y_DIRECTION*(item.y - firstItem.y) - this._itemSize;
-            else this.gap = item.x - firstItem.x - this._itemSize;
-        }
+        this._initItems();
 
         this._originSize = this._yDirection ? this.height : this.width;
-
         this._originPos = this._yDirection ? this.getPositionY() : this.getPositionX();
         this._currentPos = this._originPos;
 
@@ -290,6 +240,86 @@ flax.ListView = flax.MovieClip.extend({
             if(data && item.setData) item.setData(data, i);
             item.visible = data != null;
         }
+    },
+    _initItems: function () {
+
+        if(!this.children.length) return;
+
+        var self = this;
+
+        var children = this.children.concat();
+        var firstItem = children[0];
+        this._itemSize = this._yDirection ? firstItem.height : firstItem.width;
+
+        var count = children.length;
+
+        var sorted = [];
+        var row = 0;
+        for(var i = 0; i < count; i++) {
+            var child0 = children[i];
+            if(child0.__temp_row != undefined) continue;
+            for(var j = i + 1; j < count; j++) {
+                var child1 = children[j];
+                if(child1.__temp_row != undefined) continue;
+                var delta = self._yDirection ? Math.abs(child0.y - child1.y) : Math.abs(child0.x - child1.x);
+                if(delta < 6) {
+                    if(child0.__temp_row == undefined) {
+                        child0.__temp_row = row++;
+                        sorted[child0.__temp_row] = [child0];
+                    }
+                    child1.__temp_row = child0.__temp_row;
+                    sorted[child0.__temp_row].push(child1);
+                }
+            }
+        }
+
+        //multi columns
+        if(sorted.length) {
+            //sort columns
+            sorted.sort(function (a, b) {
+                return self._yDirection ? (Y_DIRECTION > 0 ? a[0].y > b[0].y : a[0].y < b[0].y) : (a[0].x < b[0].x);
+            })
+
+            this._columns = sorted[0].length;
+            //sort rows
+            for(var i = 0; i < row; i++) {
+                var cArr = sorted[i];
+                cArr.sort(function (a, b) {
+                    return !self._yDirection ? (Y_DIRECTION > 0 ? a.y < b.y : a.y > b.y) : (a.x > b.x);
+                });
+                this.viewArray = this.viewArray.concat(cArr);
+            }
+            children = this.viewArray;
+        } else {
+            //sort single list
+            children.sort(function (a, b) {
+                return self._yDirection ? (Y_DIRECTION > 0 ? a.y > b.y : a.y < b.y) : (a.x < b.x);
+            })
+            this.viewArray = children;
+        }
+
+
+        firstItem = children[0];
+        var secondItem = children[1];
+
+        this._startPos = this._yDirection ? firstItem.x : firstItem.y;
+
+        if(this._columns > 1) {
+
+            this._citemSize = this._yDirection ? firstItem.width : firstItem.height;
+            if(this._yDirection) this.cgap = secondItem.x - firstItem.x - this._citemSize;
+            else this.cgap = Y_DIRECTION*(secondItem.y - firstItem.y) - this._citemSize;
+            //cal clolumn gap
+            var item = children[this._columns];
+            if(this._yDirection) this.gap = Y_DIRECTION*(item.y - firstItem.y) - this._itemSize;
+            else this.gap = item.x - firstItem.x - this._itemSize;
+
+        } else {
+            if(this._yDirection) this.gap = Y_DIRECTION*(secondItem.y - firstItem.y) - this._itemSize;
+            else this.gap = secondItem.x - firstItem.x - this._itemSize;
+        }
+
+        this._totalSize = (this._itemSize + this.gap) * sorted.length || children.length;
     },
     _fillItem: function (direction) {
 

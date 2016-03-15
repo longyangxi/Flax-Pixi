@@ -543,30 +543,6 @@ flax.removeListener = function(target, func, type)
     flax.inputManager.removeListener(target, func, type);
 }
 
-flax.loadImgFromUrl = function (target, imgUrl, p, tag) {
-    if(!imgUrl)return;
-    var self = target;
-    var loadCb = function(err, img){
-        cc.textureCache.addImage(imgUrl);
-        var texture2d = new cc.Texture2D();
-        texture2d.initWithElement(img);
-        texture2d.handleLoadedTexture();
-        var sp = new cc.Sprite();
-        sp.initWithTexture(texture2d);
-        texture2d.getContentSize().height;
-        texture2d.getContentSize().width;
-        sp.tag = tag;
-        sp.setAnchorPoint(0.5,0.5);
-        sp.setScaleX(target.width/texture2d.getContentSize().width*0.9);
-        sp.setScaleY(target.height/texture2d.getContentSize().height*0.9);
-        sp.x = 50;
-        sp.y = 48;
-
-        self.addChild(sp,self.zIndex-1);
-    };
-    cc.loader.loadImg(imgUrl, {isCrossOrigin : false }, loadCb);
-}
-
 //Fixed bug in advanced mode compile when use cc.KEY
 flax.KEY = {
     'none':0,

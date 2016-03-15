@@ -82,8 +82,8 @@ flax.Module.Draggable = {
         deltaX = (deltaX > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaX));
         deltaY = (deltaY > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaY));
 
-        this._dragSpeed.x = deltaX * this.fps;
-        this._dragSpeed.y = deltaY * this.fps;
+        this._dragSpeed.x = deltaX * this.fps * 2;
+        this._dragSpeed.y = deltaY * this.fps * 2;
 
         this.dragBy(deltaX, deltaY);
 
