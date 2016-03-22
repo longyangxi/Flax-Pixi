@@ -10,13 +10,17 @@ flax.stage = null;
 flax.stageRect = null;
 flax.resolutionPolicy = null;
 flax.designedStageSize = null;
+flax.REPEAT_FOREVER = Number.MAX_VALUE - 1;
 
 flax._rendererOptions = null;
 
 flax.isMobile = false;
+
 if(window.navigator) {
     var ua = window.navigator.userAgent.toLowerCase();
     flax.isMobile = ua.indexOf('mobile') !== -1 || ua.indexOf('android') !== -1;
+} else {
+    flax.isMobile = true;
 }
 
 if(FRAMEWORK == "cocos"){

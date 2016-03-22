@@ -143,7 +143,7 @@ flax.InputManager = cc.Node.extend({
         mask.__isInputMask = true;
     },
     removeMask:function(mask){
-        if(!this.parent) return;
+        if(!this.running) return;
         var i = this._masks.indexOf(mask);
         if(i > -1) {
             this._masks.splice(i, 1);
@@ -151,7 +151,7 @@ flax.InputManager = cc.Node.extend({
         }
     },
     removeAllMasks:function(){
-        if(!this.parent) return;
+        if(!this.running) return;
         var i = this._masks.length;
         while(i--){
             this._masks[i].__isInputMask = false;
@@ -257,7 +257,7 @@ flax.InputManager = cc.Node.extend({
     },
     removeListener:function(target, func, type)
     {
-        if(!this.parent) return;
+        if(!this.running) return;
         if(target == null) target = this;
         var calls = this._callbacks[target.__instanceId];
         if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {
@@ -325,7 +325,7 @@ flax.InputManager = cc.Node.extend({
 
         var target = event.getCurrentTarget();
 
-        if(this.soleTarget && this.soleTarget != target) return false;
+        //if(this.soleTarget && this.soleTarget != target) return false;
 
         if(!flax.ifTouchValid(target, touch)) return false;
 
@@ -338,7 +338,7 @@ flax.InputManager = cc.Node.extend({
         //todo
         //if((target instanceof cc.Layer || target instanceof flax.MovieClip) && event.target == target) {
         if((target instanceof cc.Layer) && event.target == target) {
-                return false;
+            return false;
         }
         this._dispatch(target, touch, event, InputType.press);
 
@@ -535,12 +535,12 @@ flax.InputManager = cc.Node.extend({
 
 flax.addListener = function(target, func, type, context)
 {
-    flax.inputManager.addListener(target, func, type, context);
+    if(flax.inputManager) flax.inputManager.addListener(target, func, type, context);
 }
 
 flax.removeListener = function(target, func, type)
 {
-    flax.inputManager.removeListener(target, func, type);
+    if(flax.inputManager) flax.inputManager.removeListener(target, func, type);
 }
 
 //Fixed bug in advanced mode compile when use cc.KEY

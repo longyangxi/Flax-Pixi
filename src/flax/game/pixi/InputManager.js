@@ -179,7 +179,7 @@ flax.InputManager = flax.Container.extend({
     },
     removeListener:function(target, func, type, context)
     {
-        if(!this.parent) return;
+        if(!this.running) return;
         if(target == null) target = this;
         var calls = this._callbacks[target.__instanceId];
         if(calls && (type == null || (type != InputType.keyPress && type != InputType.keyUp))) {

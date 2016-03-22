@@ -34,6 +34,8 @@ flax.ListView = flax.MovieClip.extend({
 
         this._super();
 
+        this._yDirection ? this.xDraggable = false : this.yDraggable = false;
+
         this.viewArray = [];
         this._totalSize = 0;
         this._columns = 1;
@@ -89,6 +91,9 @@ flax.ListView = flax.MovieClip.extend({
         var rect = flax.rect(pos.x - w * this._viewAnchorX, pos.y - h * this._viewAnchorY, w, h);
 
         return rect;
+    },
+    getMaxDragSpeed: function () {
+        return this._itemSize;
     },
     addItem: function (itemView) {
         var gap = this.gap;

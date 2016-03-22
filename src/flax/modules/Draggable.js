@@ -17,7 +17,6 @@ flax.Module.Draggable = {
     _dragSpeed:null,
     _lastPos:null,
     _anchorPos:null,
-    _p:null,
 
     "onEnter":function() {
 
@@ -42,7 +41,6 @@ flax.Module.Draggable = {
         this._lastPos = null;
         this._anchorPos = null;
         this._dragSpeed = null;
-        this._p = null;
     },
     /**
      * Scroll the pane to make the target in the screen center
@@ -79,12 +77,6 @@ flax.Module.Draggable = {
         var deltaX = newPos.x - this._lastPos.x;
         var deltaY = newPos.y - this._lastPos.y;
 
-        deltaX = (deltaX > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaX));
-        deltaY = (deltaY > 0 ? 1 : -1) * Math.min(100, Math.abs(deltaY));
-
-        this._dragSpeed.x = deltaX * this.fps * 2;
-        this._dragSpeed.y = deltaY * this.fps * 2;
-
         this.dragBy(deltaX, deltaY);
 
         this._lastPos = newPos;
@@ -93,29 +85,41 @@ flax.Module.Draggable = {
         this._inDragging = false;
         if(this.tweenEnabled) this._startTween();
     },
+    getMaxDragSpeed: function () {
+        return 100;
+    },
     dragBy: function (deltaX, deltaY) {
 
         if(deltaX == 0 && deltaY == 0) return false;
 
-        if(!this._viewRect) this._viewRect = this._boundsView ? this._boundsView.getRect(true) : null;
+        var maxSpeed = this.getMaxDragSpeed();
+
+        deltaX = (deltaX > 0 ? 1 : -1) * Math.min(maxSpeed, Math.abs(deltaX));
+        deltaY = (deltaY > 0 ? 1 : -1) * Math.min(maxSpeed, Math.abs(deltaY));
+
+        this._dragSpeed.x = deltaX;
+        this._dragSpeed.y = deltaY;
+
+        if(!this._viewRect) this._viewRect = this._boundsView ? this._boundsView.getBounds(true) : null;
 
         if(this._viewRect) {
-            var rect = this.getViewRect ? this.getViewRect(true) : this.getRect(true);
+            var rect = this.getViewRect ? this.getViewRect(true) : this.getBounds(true);
             rect.x += deltaX;
             rect.y += deltaY;
             if(rect.x > this._viewRect.x || rect.x + rect.width < this._viewRect.x + this._viewRect.width) deltaX = 0;
             if(rect.y > this._viewRect.y || rect.y + rect.height < this._viewRect.y + this._viewRect.height) deltaY = 0;
         }
 
-        if(this._p == null) this._p = flax.p(this.x, this.y);
+        var pos = this.getPosition();
+
         if(this.xDraggable) {
-            this._p.x += deltaX;
+            pos.x += deltaX;
         }
         if(this.yDraggable) {
-            this._p.y += deltaY;
+            pos.y += deltaY;
         }
 
-        this.setPosition(this._p);
+        this.setPosition(pos);
 
         return deltaX != 0 || deltaY != 0;
     },
@@ -129,7 +133,7 @@ flax.Module.Draggable = {
         this._dragSpeed.x *= 0.9;
         this._dragSpeed.y *= 0.9;
         var speed = flax.pLength(this._dragSpeed);
-        if(speed < this.fps || !this.dragBy(this._dragSpeed.x * delta, this._dragSpeed.y * delta)) {
+        if(speed < 1 || !this.dragBy(this._dragSpeed.x, this._dragSpeed.y)) {
             this._stopTween();
         }
     }

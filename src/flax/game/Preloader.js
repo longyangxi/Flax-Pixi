@@ -49,7 +49,8 @@ flax.AbstractPreloader = flax.Scene.extend({
         }
         if (this.callback)
         {
-            this.callback.apply(self.context);
+            this.callback.apply(this.context);
+            this.context = null;
             this.callback = null;
         }
     }

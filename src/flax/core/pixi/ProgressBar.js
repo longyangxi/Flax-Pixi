@@ -107,7 +107,7 @@ flax.ProgressBar = flax.Animator.extend({
     },
     _updateBar:function()
     {
-        if(!this.parent) return;
+        if(!this.running) return;
 
         var isRadial = this._type == flax.ProgressBarType.RADIAL;
         var isHorizontal = this._type == flax.ProgressBarType.HORIZONTAL;

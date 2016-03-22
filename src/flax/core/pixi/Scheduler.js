@@ -6,8 +6,6 @@ var flax = flax || {};
 
 DELTA_RATE = 0.001/0.06;
 
-flax.REPEAT_FOREVER = Number.MAX_VALUE - 1;
-
 flax.Scheduler = flax.Class.extend({
     ticker:null,
     schedules:null,

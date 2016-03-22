@@ -77,6 +77,10 @@ flax.getBounds = function(sprite, coordinate)
     if(sprite.parent){
         if(coordinate) {
             if(coordinate != sprite.parent){
+                if(isNaN(pos.x)) {
+                    console.log("JSB bug, todo!")
+                    return flax.rect();
+                }
                 pos = sprite.parent.convertToWorldSpace(pos);
                 if(flax.isDisplay(coordinate)){
                     pos = coordinate.convertToNodeSpace(pos);

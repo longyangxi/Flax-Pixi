@@ -49,7 +49,6 @@ flax.replaceScene = function(sceneName, transition, duration)
     flax.prevSceneName = flax.currentSceneName;
     flax.currentSceneName = sceneName;
     if(flax.stopPhysicsWorld) flax.stopPhysicsWorld();
-    if(flax.inputManager) flax.inputManager.removeFromParent();
     if(flax.clearDraw) flax.clearDraw(true);
 
     var s = flax._scenesDict[sceneName];

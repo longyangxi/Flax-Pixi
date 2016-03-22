@@ -116,9 +116,11 @@ flax.Module.Physics = {
     },
     "onExit":function()
     {
-        //remove physics
-        for(var i = 0; i < this._physicsColliders.length; i++){
-            this._physicsColliders[i].destroyPhysics();
+        if(this._physicsColliders) {
+            //remove physics
+            for(var i = 0; i < this._physicsColliders.length; i++){
+                this._physicsColliders[i].destroyPhysics();
+            }
         }
         this._physicsColliders = [];
 
@@ -142,7 +144,7 @@ flax.Module.Physics = {
     createPhysics:function(type, fixedRotation, bullet){
         if(type == null) type = Box2D.Dynamics.b2Body.b2_dynamicBody;
         this._physicsBodyParam = {type:type, fixedRotation:fixedRotation, bullet:bullet};
-        if(!this.parent) return null;
+        if(!this.running) return null;
         if(this._physicsBody == null) {
             var def = new Box2D.Dynamics.b2BodyDef();
             def.type = type;
