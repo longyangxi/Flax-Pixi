@@ -325,7 +325,7 @@ flax.InputManager = cc.Node.extend({
 
         var target = event.getCurrentTarget();
 
-        //if(this.soleTarget && this.soleTarget != target) return false;
+        if(this.soleTarget && this.soleTarget != target) return false;
 
         if(!flax.ifTouchValid(target, touch)) return false;
 
@@ -333,6 +333,7 @@ flax.InputManager = cc.Node.extend({
         if(!this.ifNotMasked(target, pos)) return false;
 
         event.currentTarget = target;
+        //todo, not good performance to do that
         event.target = this._findRealTarget(target, pos) || target;
         //if currentTarget is cc.Layer or flax.MovieClip and hasn't touch any of it's child, then ignore!
         //todo

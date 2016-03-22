@@ -210,13 +210,14 @@ flax.ifTouched = function(target, pos)
 flax.ifTouchValid = function(target, touch)
 {
     if(target == null) return false;
-    if(!(target instanceof flax.Scene) && !target.parent) return false;
+    //if(!(target instanceof flax.Scene) && !target.parent) return false;
+    if(!target.running) return false;
+    if(target.isMouseEnabled && target.isMouseEnabled() === false) return false;
     var p = target;
     while(p) {
         if(!p.visible) return false;
         p = p.parent;
     }
-    if(target.isMouseEnabled && target.isMouseEnabled() === false) return false;
     if(touch && !flax.ifTouched(target, touch.getLocation())) return false;
     return true;
 }

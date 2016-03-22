@@ -93,7 +93,7 @@ flax.ListView = flax.MovieClip.extend({
         return rect;
     },
     getMaxDragSpeed: function () {
-        return this._itemSize;
+        return this._itemSize || 100;
     },
     addItem: function (itemView) {
         var gap = this.gap;
@@ -104,6 +104,7 @@ flax.ListView = flax.MovieClip.extend({
             lastPos = this._yDirection ? lastItem.y : lastItem.x;
             lastSize = this._yDirection ? lastItem.height : lastItem.width;
         }
+        if(this._itemSize == 0)  this._itemSize = lastSize;
         itemView.x = this._yDirection ? this.margin : (lastPos + lastSize + gap);
         itemView.y = this._yDirection ? (lastPos + (lastSize + gap)*Y_DIRECTION) : this.margin;
 

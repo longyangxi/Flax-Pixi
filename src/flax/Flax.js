@@ -5,6 +5,7 @@
 var flax = flax || {};
 window['flax'] = flax;
 
+flax.resolution = 1;
 flax.frameInterval = 1/60;
 flax.stage = null;
 flax.stageRect = null;
