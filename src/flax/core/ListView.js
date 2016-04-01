@@ -278,7 +278,6 @@ flax.ListView = flax.MovieClip.extend({
                 }
             }
         }
-
         //multi columns
         if(sorted.length) {
             //sort columns
@@ -311,7 +310,6 @@ flax.ListView = flax.MovieClip.extend({
         this._startPos = this._yDirection ? firstItem.x : firstItem.y;
 
         if(this._columns > 1) {
-
             this._citemSize = this._yDirection ? firstItem.width : firstItem.height;
             if(this._yDirection) this.cgap = secondItem.x - firstItem.x - this._citemSize;
             else this.cgap = Y_DIRECTION*(secondItem.y - firstItem.y) - this._citemSize;

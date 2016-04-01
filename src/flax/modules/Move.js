@@ -42,7 +42,12 @@ flax.Module.Move = {
         this._callBack = callBack;
         this._callContext = callContext;
         var dis = flax.pSub(pos, this.getPosition());
-        if(flax.pLength(dis) < 1 || !duration || duration <= 0){
+        var invalidDuration = false;
+        if(!duration || duration <= 0) {
+            duration = 0.1;
+            invalidDuration = true;
+        }
+        if(flax.pLength(dis) < 1 || invalidDuration){
             this.scheduleOnce(this._moveOver, 0.01);
             return;
         }
@@ -104,7 +109,7 @@ flax.Module.Move = {
     {
         if(this._inMoving) return;
         this._inMoving = true;
-        this.schedule(this._doMove, flax.frameInterval, flax.REPEAT_FOREVER);
+        this.schedule(this._doMove, 1/60, flax.REPEAT_FOREVER);
     },
     stopMove:function()
     {
