@@ -271,6 +271,11 @@ flax.AssetsManager = flax.Class.extend({
             throw "Make sure you have loaded the resource: " + assetsFile;
         }
 
+        //If the assetsFile is not exported from flash
+        if(dict['displays'] == null && dict['fonts'] == null) {
+            return this._addFromOriginPlist(assetsFile1);
+        }
+
         this.metaCache[assetsFile] = dict['metadata'];
         //the min tool version this API needed
         var toolVersion = this.getToolVersion(assetsFile);
@@ -312,6 +317,43 @@ flax.AssetsManager = flax.Class.extend({
         {
             this._parseFonts(assetsFile, dict["fonts"]);
         }
+        return true;
+    },
+    /**
+     * Add plist defined anim, not from flash
+     * */
+    _addFromOriginPlist:function(plistFile)
+    {
+        if(typeof this.framesCache[plistFile] !== "undefined") return false;
+
+        var dict = flax.loader.getRes(plistFile);
+        if(dict == null){
+            throw "Make sure you have loaded the resource: " + plistFile;
+        }
+
+        flax.spriteFrameCache.addSpriteFrames(plistFile);
+        //Note: the plist will be released by cocos when addSpriteFrames
+        //We want it to be there to check the resource if loaded
+        flax.loader.cache[plistFile] = "loaded!";
+
+        //parse the frames
+        var frames = [];
+        var frameDict = dict["frames"];
+        for(var key in frameDict)
+        {
+            frames.push(key);
+        }
+        //sort ascending
+        frames.sort();
+
+        this.framesCache[plistFile] = frames;
+
+        var animName = flax.path.mainFileName(flax.path.basename(plistFile));
+
+        var dDefine = {"type": null, "start": 0, "end": frames.length - 1, "fps": flax.game.config["frameRate"]};
+        this.displayDefineCache[plistFile + animName] = dDefine;
+        this.displaysCache[plistFile] = [animName];
+
         return true;
     },
     _parseDisplays:function(assetsFile, displays, fps) {
