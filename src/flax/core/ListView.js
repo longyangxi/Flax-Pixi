@@ -174,7 +174,7 @@ flax.ListView = flax.MovieClip.extend({
     },
     onStartDrag: function () {
         if(!this._clickInited) {
-            var rect = this.getCollider("mask").getRect(true);
+            var rect = this.getCollider("mask").getBounds(true);
             this._visibleSize = this._yDirection ? rect.height : rect.width;
             this.setClickArea(rect);
             this._clickInited = true;
@@ -282,7 +282,7 @@ flax.ListView = flax.MovieClip.extend({
         if(sorted.length) {
             //sort columns
             sorted.sort(function (a, b) {
-                return self._yDirection ? (Y_DIRECTION > 0 ? a[0].y > b[0].y : a[0].y < b[0].y) : (a[0].x < b[0].x);
+                return (self._yDirection ? (Y_DIRECTION > 0 ? a[0].y > b[0].y : a[0].y < b[0].y) : (a[0].x < b[0].x));
             })
 
             this._columns = sorted[0].length;
@@ -290,7 +290,7 @@ flax.ListView = flax.MovieClip.extend({
             for(var i = 0; i < row; i++) {
                 var cArr = sorted[i];
                 cArr.sort(function (a, b) {
-                    return !self._yDirection ? (Y_DIRECTION > 0 ? a.y < b.y : a.y > b.y) : (a.x > b.x);
+                    return (!self._yDirection ? (Y_DIRECTION > 0 ? a.y < b.y : a.y > b.y) : (a.x > b.x));
                 });
                 this.viewArray = this.viewArray.concat(cArr);
             }
@@ -298,7 +298,7 @@ flax.ListView = flax.MovieClip.extend({
         } else {
             //sort single list
             children.sort(function (a, b) {
-                return self._yDirection ? (Y_DIRECTION > 0 ? a.y > b.y : a.y < b.y) : (a.x < b.x);
+                return (self._yDirection ? (Y_DIRECTION > 0 ? a.y > b.y : a.y < b.y) : (a.x < b.x));
             })
             this.viewArray = children;
         }

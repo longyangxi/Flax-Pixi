@@ -79,7 +79,7 @@ flax._sprite = {
         }else{
             this._super();
         }
-        this.__instanceId = flax.getInstanceId();
+        if(FRAMEWORK != "cocos") this.__instanceId = flax.getInstanceId();
         this.reset();
         this.setSource(assetsFile, assetID);
     },

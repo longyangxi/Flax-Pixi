@@ -23,7 +23,7 @@ flax._image = {
             this.clsName = "flax.Scale9Image";
         }
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
-        this.__instanceId = flax.getInstanceId();
+        if(FRAMEWORK != "cocos") this.__instanceId = flax.getInstanceId();
         this._anchorBindings = [];
         this.setSource(assetsFile, assetID);
     },

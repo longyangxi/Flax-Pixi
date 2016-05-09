@@ -151,12 +151,12 @@ flax.getUrlVars = function() {
 /**
  * Convert key-value params to url vars string
  * */
-flax.encodeUrlVars = function (params) {
+flax.encodeUrlVars = function (params, useJson) {
     if(!params) return "";
     var paramsStr = "";
     for(var key in params){
         if(paramsStr != "") paramsStr += "&";
-        paramsStr += key + "=" + params[key];
+        paramsStr += key + "=" + encodeURIComponent(params[key]);
     }
     return paramsStr;
 }
@@ -197,6 +197,7 @@ flax.ifTouched = function(target, pos)
 {
     if(target == null) return false;
     if(!(flax.isDisplay(target))) return false;
+
     //if its flax.FlaxSprite
     if(target.mainCollider){
         return target.mainCollider.containsPoint(pos);
@@ -211,12 +212,20 @@ flax.ifTouchValid = function(target, touch)
 {
     if(target == null) return false;
     if(!(target instanceof flax.Scene) && !target.parent) return false;
+    var pos = null;
+    if(touch) pos = touch.getLocation();
     var p = target;
     while(p) {
         if(!p.visible) return false;
+        //Check the parent's clickArea, specially for children of masked mc
+        //todo, to be more perfect
+        if(pos && p.getClickArea) {
+            var clickArea = p.getClickArea();
+            if(clickArea && !flax.rectContainsPoint(clickArea, pos)) return false;
+        }
         p = p.parent;
     }
     if(target.isMouseEnabled && target.isMouseEnabled() === false) return false;
-    if(touch && !flax.ifTouched(target, touch.getLocation())) return false;
+    if(pos && !flax.ifTouched(target, pos)) return false;
     return true;
 }

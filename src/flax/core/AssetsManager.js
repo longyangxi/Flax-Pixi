@@ -188,7 +188,6 @@ flax.AssetsManager = flax.Class.extend({
 
         var viewRect = view.getRect(false);
 
-        //todo, mask的时候看不见区域也会点击生效,做下判断,如果mask区域外点击不会触发
         //todo, 根据任意形状画出来,然后做遮罩,在createDisplay的时候就做
         //todo, pixi的做法
 

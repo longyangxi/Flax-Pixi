@@ -90,6 +90,9 @@ flax.init = function(resolutionPolicy, initialUserData, options)
     flax._rendererOptions = options;
 
     flax._setupModules();
+
+    if(!options || options.enableRetina !== false) flax.view.enableRetina(true);
+
     flax._setupView(resolutionPolicy, options && options.width, options && options.height);
 
     flax.log("Flax initialized as an engine, version: " + VERSION);

@@ -15,7 +15,8 @@
         "core/signal/Signal.js",
         "core/signal/wrapper.js",
         "core/Modular.js",
-        "modules/Draggable.js"
+        "modules/Draggable.js",
+        "libs/Tween.js"
       ],
       "common" : [
         "core/AssetsManager.js",

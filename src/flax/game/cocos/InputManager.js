@@ -325,7 +325,7 @@ flax.InputManager = cc.Node.extend({
 
         var target = event.getCurrentTarget();
 
-        //if(this.soleTarget && this.soleTarget != target) return false;
+        if(this.soleTarget && this.soleTarget != target) return false;
 
         if(!flax.ifTouchValid(target, touch)) return false;
 

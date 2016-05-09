@@ -12,13 +12,15 @@ function http_get(url, callback, params, isPost, errorcallback, try_times){
 
     try_times = try_times || 3;
 
-    var paramsStr = flax.encodeUrlVars(params);
-
-    var xhr = new XMLHttpRequest();
+    var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new ActiveXObject("MSXML2.XMLHTTP");
 
     if(isPost){
+        var paramsStr = "params=" + JSON.stringify(params);
         xhr.open("POST", url);
+        if(paramsStr !== "") rUrl = url + "?" + paramsStr;
+        console.log("send post: " + rUrl);
     }else{
+        var paramsStr = flax.encodeUrlVars(params);
         var rUrl = url;
         if(paramsStr !== "") rUrl = url + "?" + paramsStr;
         console.log("send get: " + rUrl);
@@ -37,6 +39,11 @@ function http_get(url, callback, params, isPost, errorcallback, try_times){
             if(xhr.status == 200){
                 var response = xhr.responseText;
                 response = response.replace(/\\/g,"");
+                try{
+                    response = JSON.parse(response);
+                } catch (e) {
+
+                }
                 if(callback){
                     callback(response);
                 }
