@@ -224,6 +224,7 @@ flax.AssetsManager = flax.Class.extend({
         }
         var obj = this.createDisplay(target.assetsFile, target.assetID, {parent: (autoAdd ? target.parent : null)}, fromPool, target.clsName);
         if(autoAdd) obj.setPosition(target.getPosition());
+        obj.name = target.name;
         obj.setScale(target.getScale());
         obj.setRotation(target.rotation);
         obj.zIndex = target.zIndex;

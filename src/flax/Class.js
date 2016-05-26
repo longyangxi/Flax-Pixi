@@ -60,6 +60,21 @@ flax.copyProperties = function(params, target)
     }
 };
 
+//flax.copyProperties = function(params, target)
+//{
+//    if(params == null || target == null) return;
+//
+//    for(var k in params) {
+//        if(typeof params[k] == "object") {
+//            if(target[k] == null) {
+//                target[k] = params[k] instanceof Array ? [] : {};
+//            }
+//            flax.copyProperties(params[k], target[k]);
+//        }
+//        else target[k] = params[k];
+//    }
+//};
+
 /**
  * Common getter setter configuration function
  * @function

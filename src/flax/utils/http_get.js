@@ -6,6 +6,8 @@
  * @license      MIT License: {@link http:http://mit-license.org/}
  */
 
+HTTP_TIME_OUT = 5000;
+
 function http_get(url, callback, params, isPost, errorcallback, try_times){
     if(url == null || url == '')
         return;
@@ -34,6 +36,11 @@ function http_get(url, callback, params, isPost, errorcallback, try_times){
         xhr.send(paramsStr);
     }
 
+    var tId = setTimeout(function () {
+        console.log("http error: connection time out!");
+        if(errorcallback) errorcallback("time out");
+    }, HTTP_TIME_OUT);
+
     xhr.onreadystatechange = function () {
         if(xhr.readyState == 4){
             if(xhr.status == 200){
@@ -58,7 +65,8 @@ function http_get(url, callback, params, isPost, errorcallback, try_times){
                 }
             }
         }else{
-//            cc.log(xhr.status + ", " + xhr.readyState)
+            //cc.log(xhr.status + ", " + xhr.readyState)
         }
+        clearTimeout(tId);
     }
 }

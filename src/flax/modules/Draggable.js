@@ -106,8 +106,24 @@ flax.Module.Draggable = {
             var rect = this.getViewRect ? this.getViewRect(true) : this.getBounds(true);
             rect.x += deltaX;
             rect.y += deltaY;
-            if(rect.x > this._viewRect.x || rect.x + rect.width < this._viewRect.x + this._viewRect.width) deltaX = 0;
-            if(rect.y > this._viewRect.y || rect.y + rect.height < this._viewRect.y + this._viewRect.height) deltaY = 0;
+
+            if(rect.x > this._viewRect.x && deltaX > 0) {
+                deltaX -= rect.x - this._viewRect.x;
+                if(deltaX < 0) deltaX = 0;
+            }
+            if(rect.x + rect.width < this._viewRect.x + this._viewRect.width && deltaX < 0) {
+                deltaX -= rect.x + rect.width - this._viewRect.x - this._viewRect.width;
+                if(deltaX > 0) deltaX = 0;
+            }
+
+            if(rect.y > this._viewRect.y && deltaY > 0) {
+                deltaY -= rect.y - this._viewRect.y;
+                if(deltaY < 0) deltaY = 0;
+            }
+            if(rect.y + rect.height < this._viewRect.y + this._viewRect.height && deltaY < 0) {
+                deltaY -= rect.y + rect.height - this._viewRect.y - this._viewRect.height;
+                if(deltaY > 0) deltaY = 0;
+            }
         }
 
         var pos = this.getPosition();

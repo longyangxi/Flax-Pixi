@@ -44,6 +44,27 @@ flax.getPointOnCircle = function(center, radius, angleDegree)
     return {x: cx + radius*Math.cos(angleDegree), y: cy + radius*Math.sin(angleDegree)};
 };
 
+/**
+ * Solve the incompatible of Array.sort in different browsers
+ * */
+flax.sortArray = function (array, fn) {
+    if(fn == null) {
+        fn = function (a, b) {
+            return b > a
+        }
+    }
+    for(var i = 0; i < array.length; i++) {
+        var key = array[i];
+        var j = i - 1;
+        while(j >= 0 && fn(array[j], key)) {
+            array[j + 1] = array[j];
+            j--;
+        }
+        array[j + 1] = key;
+    }
+    return array;
+}
+
 flax.shuffleArray = function(arr, len)
 {
     if(len === undefined || len <= 0 || len > arr.length) len = arr.length;
@@ -84,6 +105,11 @@ flax.getRandomInArray = function (arr, rates)
         if(rate <= totalRate){
             break;
         }
+    }
+    //if the rates sum is not 1
+    if(i == rates.length) {
+        i = flax.randInt(0, arr.length);
+        console.warn("The sum of the rates is not equal with 1!")
     }
     return arr[i];
 };
