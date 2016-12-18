@@ -165,7 +165,16 @@ PIXI.Container.prototype.removeChildren = function (beginIndex, endIndex) {
 }
 
 flax.Container = PIXI.Container.extend({
-
+    onEnter: function () {
+        if(!(this instanceof flax.FlaxContainer)) {
+            flax.callModuleOnEnter(this);
+        }
+    },
+    onExit: function () {
+        if(!(this instanceof flax.FlaxContainer)) {
+            flax.callModuleOnExit(this);
+        }
+    }
 })
 
 /////////////////////////////////////////////////////////////////////////////////////
@@ -180,6 +189,16 @@ flax.Sprite = PIXI.Sprite.extend({
         this._super(fileOrTexture);
         //default anchor is 0.5
         this.anchor.x = this.anchor.y = 0.5;
+    },
+    onEnter: function () {
+        if(!(this instanceof flax.FlaxSprite)) {
+            flax.callModuleOnEnter(this);
+        }
+    },
+    onExit: function () {
+        if(!(this instanceof flax.FlaxSprite)) {
+            flax.callModuleOnExit(this);
+        }
     }
 })
 

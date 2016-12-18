@@ -8,6 +8,15 @@ flax.buttonSound = null;
 
 flax._soundEnabled = true;
 
+//fix the bug in cocos jsb
+flax.onScreenShow.add(function () {
+    if(!flax._soundEnabled) {
+        var audioEngine = cc.audioEngine
+        audioEngine.pauseMusic();
+        audioEngine.stopAllEffects();
+    }
+});
+
 flax.setSoundEnabled = function(value)
 {
     if(flax._soundEnabled == value) return;
@@ -46,6 +55,7 @@ flax.pauseMusic = function(){
     cc.audioEngine.pauseMusic();
 };
 flax.resumeMusic = function(){
+    if(!flax._soundEnabled) return;
     cc.audioEngine.resumeMusic();
 }
 flax.playEffect = function(path)

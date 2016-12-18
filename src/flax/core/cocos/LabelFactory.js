@@ -59,7 +59,7 @@ flax.createLabel = function(assetsFile, data, define)
         lbl.setFontName(data.font);
         lbl.setFontSize(data.fontSize);
         lbl.setHorizontalAlignment(data.textAlign);
-        //lbl.setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER);
+        lbl.setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER);
         lbl.setFontFillColor(data.fontColor);
         lbl.setDimensions(data.textWidth, data.textHeight);
 

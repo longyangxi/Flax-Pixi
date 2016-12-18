@@ -17,7 +17,7 @@ flax.Module.Draggable = {
     _dragSpeed:null,
     _lastPos:null,
     _anchorPos:null,
-
+    _tempPos:null,
     "onEnter":function() {
 
         var view = this.getCollider("view");
@@ -25,6 +25,7 @@ flax.Module.Draggable = {
         this._boundsView = view;
 
         this._dragSpeed = flax.p();
+        this._tempPos = flax.p();
 
         flax.inputManager.addListener(this, this._startDrag, InputType.press, this);
         flax.inputManager.addListener(this, this._drag, InputType.move, this);
@@ -83,6 +84,7 @@ flax.Module.Draggable = {
     },
     _stopDrag:function(touch, event){
         this._inDragging = false;
+        if(this.onStopDrag)this.onStopDrag();
         if(this.tweenEnabled) this._startTween();
     },
     getMaxDragSpeed: function () {
@@ -127,17 +129,32 @@ flax.Module.Draggable = {
         }
 
         var pos = this.getPosition();
+        var newPos = this._tempPos;
+        newPos.x = pos.x;
+        newPos.y = pos.y;
 
         if(this.xDraggable) {
-            pos.x += deltaX;
+            newPos.x += deltaX;
         }
         if(this.yDraggable) {
-            pos.y += deltaY;
+            newPos.y += deltaY;
         }
 
-        this.setPosition(pos);
+        //if the position can draggable, change the pos directly
+        if(this.restrainDragPos) {
+            this.restrainDragPos(newPos, deltaX, deltaY);
+        }
 
-        return deltaX != 0 || deltaY != 0;
+        this.setPosition(newPos);
+
+        deltaX = newPos.x - pos.x;
+        deltaY = newPos.y - pos.y;
+        var posChanged = deltaX != 0 || deltaY != 0;
+
+        if(posChanged && this.onNewPosition) {
+            this.onNewPosition(deltaX, deltaY);
+        }
+        return posChanged;
     },
     _startTween: function () {
         this.schedule(this._doTween, flax.frameInterval);

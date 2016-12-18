@@ -66,6 +66,7 @@ flax.pauseMusic = function(){
 }
 
 flax.resumeMusic = function(){
+    if(!flax._soundEnabled) return;
     if(flax._currentMusic) {
         flax._currentMusic.play();
     }

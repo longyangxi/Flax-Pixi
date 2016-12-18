@@ -27,6 +27,9 @@ flax.Collider = flax.Class.extend({
     _clickArea:null,
     _debugNode:null,
     ctor:function(data, centerAnchor){
+        this.init(data, centerAnchor)
+    },
+    init:function(data, centerAnchor){
 
         this._originData = data;
         this._centerAnchor = centerAnchor;
@@ -336,7 +339,13 @@ flax.Module.Collider = {
     },
     mainCollider:{
         get: function () {
-            return this._mainCollider;
+            if(this._mainCollider) {
+                //fix the zero size bug
+                if((this._mainCollider._width == 0 && this.width > 0) || (this._mainCollider._height == 0 && this.height > 0)) {
+                    this._mainCollider.init("Rect,0,0," + this.width + "," + this.height + ",0", FRAMEWORK != "cocos");
+                }
+            }
+            return this._mainCollider || flax.ZERO_RECT;
         }
     },
     center:{

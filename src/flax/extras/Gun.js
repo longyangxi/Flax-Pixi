@@ -138,8 +138,10 @@ flax.BulletCanvas = flax.SpriteBatchNode.extend({
     },
     onExit:function(){
         this._super();
-        this.onBulletHit.removeAll();
-        this.onBulletOut.removeAll();
+        this.onBulletHit.dispose();
+        this.onBulletOut.dispose();
+        this.onBulletHit = null;
+        this.onBulletOut = null;
     },
     addBullet:function(rotation, position, param, owner){
         if(this.parent == null) {

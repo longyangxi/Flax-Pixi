@@ -2,6 +2,9 @@
   "modules" : {
     "core" : {
       "base" : [
+        "core/signal/SignalBinding.js",
+        "core/signal/Signal.js",
+        "core/signal/wrapper.js",
         "Const.js",
         "Class.js",
         "Flax.js",
@@ -11,9 +14,6 @@
         "core/utils/Point.js",
         "core/utils/Rect.js",
         "core/utils/Path.js",
-        "core/signal/SignalBinding.js",
-        "core/signal/Signal.js",
-        "core/signal/wrapper.js",
         "core/Modular.js",
         "modules/Draggable.js",
         "libs/Tween.js"
@@ -47,6 +47,7 @@
         "core/pixi/LabelFactory.js"
       ],
       "cocos" : [
+        "core/cocos/ScheduleOnce.js",
         "core/cocos/Image.js",
         "core/cocos/ProgressBar.js",
         "core/cocos/LabelFactory.js"

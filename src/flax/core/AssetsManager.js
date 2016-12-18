@@ -258,6 +258,15 @@ flax.AssetsManager = flax.Class.extend({
             flax.loader.release(this.imageCache[i]);
         }
         this.imageCache.length = 0;
+        //todo,清除
+        //this.framesCache = {};
+        //this.displaysCache = {};
+        //this.displayDefineCache = {};
+        //this.mcsCache = {};
+        //this.subAnimsCache = {};
+        //this.fontsCache = {};
+        //this.imageCache = [];
+        //this.metaCache = {};
     },
     addAssets:function(assetsFile)
     {
@@ -348,7 +357,10 @@ flax.AssetsManager = flax.Class.extend({
 
         this.framesCache[plistFile] = frames;
 
-        var animName = flax.path.mainFileName(flax.path.basename(plistFile));
+        var animName = flax.path.basename(plistFile);
+        var idx = animName.lastIndexOf(".");
+        if(idx !== -1)
+            animName = animName.substring(0,idx);
 
         var dDefine = {"type": null, "start": 0, "end": frames.length - 1, "fps": flax.game.config["frameRate"]};
         this.displayDefineCache[plistFile + animName] = dDefine;
@@ -519,5 +531,6 @@ flax._strToRect = function(str)
 
 flax.createDisplay = function(assetsFile, assetID, params, fromPool, clsName)
 {
+
     return flax.assetsManager.createDisplay(assetsFile, assetID, params, fromPool, clsName);
 }

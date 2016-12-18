@@ -17,6 +17,7 @@ flax.ButtonGroup = flax.Class.extend({
             buttons = Array.prototype.slice.call(arguments);
         }
         for(var i = 0; i < buttons.length; i++){
+
             var btn = buttons[i];
             if(!flax.isButton(btn)) {
                 throw "The element added to a ButtonGroup must be a flax button!"
@@ -40,7 +41,7 @@ flax.ButtonGroup = flax.Class.extend({
             }
         }
         if(this.buttons.length == 0){
-            this.onSelected.removeAll();
+            this.onSelected.dispose();
             this.onSelected = null;
         }
     },

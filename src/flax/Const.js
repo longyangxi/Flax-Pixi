@@ -4,7 +4,7 @@
 
 if(typeof FRAMEWORK == "undefined") FRAMEWORK = "cocos";
 
-VERSION = 2.5;
+VERSION = 2.6;
 MIN_TOOL_VERSION = 2.0;
 /**
  * Default scale down for button when mouse down

@@ -119,7 +119,7 @@ flax._sprite = {
             this._updateLaguage();
         }
         flax.callModuleFunction(this, "onInit");
-        if(this.currentAnim){
+        if(this.currentAnim && this.onFrameLabel){
             this.onFrameLabel.dispatch(this.currentAnim);
         }
     },
@@ -399,7 +399,7 @@ flax._sprite = {
     {
         this._animReversed = false;
         //convert frame label to frame number
-        if(isNaN(frameOrLabel)) {
+        if(typeof frameOrLabel == "string") {
             var lbl = this.getLabels(frameOrLabel);
             if(lbl == null){
                 var has = this._setSubAnim(frameOrLabel, false);
@@ -448,7 +448,7 @@ flax._sprite = {
     },
     onFrame:function(delta)
     {
-        if(!this.visible) return;
+        if(!this.visible || !this.running) return;
 
         var reversed = this._animReversed;
         var d = reversed ? -1 : 1;
@@ -464,12 +464,12 @@ flax._sprite = {
             if(this.autoDestroyWhenOver || this.autoStopWhenOver || this.autoHideWhenOver){
                 this.updatePlaying(false);
             }
-            if(this.onAnimationOver.getNumListeners())
+            if(this.onAnimationOver && this.onAnimationOver.getNumListeners())
             {
                 this.onAnimationOver.dispatch(this);
             }
 
-            if(!this.running) return;
+            //if(!this.running) return;
 
             if(this.autoDestroyWhenOver) {
                 this.destroy();
@@ -483,7 +483,7 @@ flax._sprite = {
             this._animTime = 0;
         }
 
-        if(!this.running) return;
+        //if(!this.running) return;
 
         end = !reversed  ? this.currentFrame > this._loopEnd : this.currentFrame < this._loopEnd;
         var last = !reversed ? this.currentFrame > this.totalFrames - 1 : this.currentFrame < 0;
@@ -500,7 +500,7 @@ flax._sprite = {
             }else{
                 this._sequenceIndex = 0;
             }
-            if(this.onSequenceOver.getNumListeners()){
+            if(this.onSequenceOver && this.onSequenceOver.getNumListeners()){
                 this.onSequenceOver.dispatch(this);
             }
             if(this._sequenceIndex !=0 ) return;
@@ -644,15 +644,22 @@ flax._sprite = {
         //call the module onExit
         flax.callModuleOnExit(this);
 
-        this.onAnimationOver.removeAll();
-        this.onSequenceOver.removeAll();
-        this.onFrameChanged.removeAll();
-        this.onFrameLabel.removeAll();
-
-        this.onAnimationOver = null;
-        this.onSequenceOver = null;
-        this.onFrameChanged = null;
-        this.onFrameLabel = null;
+        if(this.onAnimationOver) {
+            this.onAnimationOver.dispose();
+            this.onAnimationOver = null;
+        }
+        if(this.onSequenceOver) {
+            this.onSequenceOver.dispose();
+            this.onSequenceOver = null;
+        }
+        if(this.onFrameChanged) {
+            this.onFrameChanged.dispose();
+            this.onFrameChanged = null;
+        }
+        if(this.onFrameLabel) {
+            this.onFrameLabel.dispose();
+            this.onFrameLabel = null;
+        }
 
         this.define = null;
         this.mask = null;
@@ -673,37 +680,43 @@ flax._sprite = {
             }
         }
     },
-    setPosition:function(pos, yValue)
-    {
-        var dirty = false;
-        var _x = this.getPositionX();
-        var _y = this.getPositionY();
-        var dx = 0;
-        var dy = 0;
-        if(yValue === undefined) {
-            dx = pos.x - _x;
-            dy = pos.y - _y;
-            dirty = (dx != 0 || dy != 0);
-            if(dirty) this._super(pos);
-        }else {
-            dx = pos - _x;
-            dy = yValue - _y;
-            dirty = (dx != 0 || dy != 0);
-            if(dirty) this._super(pos, yValue);
-        }
-        this.onNewPosition(dx, dy);
-        if(!dirty || !this.parent) return;
-        flax.callModuleFunction(this, "onPosition");
-    },
-    setPositionX:function (x) {
-        this.setPosition(x, this.getPositionY());
-    },
-    setPositionY:function (y) {
-        this.setPosition(this.getPositionX(), y);
-    },
-    onNewPosition: function (dx, dy) {
-
-    },
+    //setPosition:function(pos, yValue)
+    //{
+        //var dirty = false;
+        //var _x = this.getPositionX();
+        //var _y = this.getPositionY();
+        //var dx = 0;
+        //var dy = 0;
+        //if(yValue === undefined) {
+        //    dx = pos.x - _x;
+        //    dy = pos.y - _y;
+        //    dirty = (dx != 0 || dy != 0);
+        //    if(dirty) {
+        //        if(FRAMEWORK == "cocos") cc_sprite_set_position.call(this, pos);
+        //        else this._super(pos);
+        //    }
+        //}else {
+        //    dx = pos - _x;
+        //    dy = yValue - _y;
+        //    dirty = (dx != 0 || dy != 0);
+        //    if(dirty) {
+        //        if(FRAMEWORK == "cocos") cc_sprite_set_position.call(this, pos, yValue);
+        //        else this._super(pos, yValue);
+        //    }
+        //}
+        //this._super(pos, yValue)
+        //this.onNewPosition(dx, dy);
+        //if(!dirty || !this.parent) return;
+        //flax.callModuleFunction(this, "onPosition");
+    //},
+    //setPositionX:function (x) {
+    //    this.setPosition(x, this.getPositionY());
+    //},
+    //setPositionY:function (y) {
+    //    this.setPosition(this.getPositionX(), y);
+    //},
+    //onNewPosition: function (dx, dy) {
+    //},
     setLocalZOrder: function (zIndex) {
         cc.Node.prototype.setLocalZOrder.call(this, zIndex);
         if(this.mask) {
@@ -742,6 +755,7 @@ flax._sprite = {
         this._anchorBindings = [];
         this._animSequence = [];
         this._fpsForAnims = {};
+
         this.onAnimationOver = new signals.Signal();
         this.onSequenceOver = new signals.Signal();
         this.onFrameChanged = new signals.Signal();
@@ -821,6 +835,13 @@ _defineGT(flax.FlaxSprite.prototype);
 /////////////////////////////////////////////////////////////
 
 if(FRAMEWORK == "cocos"){
+    var cc_sprite_set_position = cc.Sprite.prototype.setPosition;
+    //fix the setString bug in JSB 3.13
+    cc.LabelTTF.prototype._setString = cc.LabelTTF.prototype.setString;
+    cc.LabelTTF.prototype.setString = function (str) {
+        this._setString('' + str)
+    }
+
     flax.FlaxSpriteBatch = flax.SpriteBatchNode.extend(flax._sprite);
     flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
     {

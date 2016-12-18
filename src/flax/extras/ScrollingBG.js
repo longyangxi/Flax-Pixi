@@ -30,7 +30,8 @@ flax.ScrollingBG = cc.Node.extend({
     onExit:function()
     {
         this._super();
-        this.onScrolledOver.removeAll();
+        this.onScrolledOver.dispose();
+        this.onScrolledOver = null;
     },
     addSource:function(source, assetID, isTile)
     {

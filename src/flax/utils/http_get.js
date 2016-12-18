@@ -6,13 +6,16 @@
  * @license      MIT License: {@link http:http://mit-license.org/}
  */
 
-HTTP_TIME_OUT = 5000;
+HTTP_TIME_OUT = 8000;
 
-function http_get(url, callback, params, isPost, errorcallback, try_times){
+/**
+ * responseType: text or arraybuffer
+ * */
+function http_get(url, callback, params, isPost, errorcallback, responseType, try_times){
     if(url == null || url == '')
         return;
 
-    try_times = try_times || 3;
+    if(try_times == null) try_times = 3;
 
     var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new ActiveXObject("MSXML2.XMLHTTP");
 
@@ -30,10 +33,8 @@ function http_get(url, callback, params, isPost, errorcallback, try_times){
     }
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    if(!isPost || paramsStr == "") {
-        xhr.send();
-    } else {
-        xhr.send(paramsStr);
+    if(responseType) {
+        xhr.responseType = responseType;
     }
 
     var tId = setTimeout(function () {
@@ -41,23 +42,35 @@ function http_get(url, callback, params, isPost, errorcallback, try_times){
         if(errorcallback) errorcallback("time out");
     }, HTTP_TIME_OUT);
 
+    if(!isPost || paramsStr == "") {
+        xhr.send();
+    } else {
+        xhr.send(paramsStr);
+    }
+
     xhr.onreadystatechange = function () {
         if(xhr.readyState == 4){
             if(xhr.status == 200){
-                var response = xhr.responseText;
-                response = response.replace(/\\/g,"");
-                try{
-                    response = JSON.parse(response);
-                } catch (e) {
+                var response = null;
+                if(responseType == "arraybuffer") {
+                    response = xhr.response;
+                } else {
+                    response = xhr.responseText;
+                    response = response.replace(/\\/g,"");
+                    try{
+                        response = JSON.parse(response);
+                    } catch (e) {
 
+                    }
                 }
+
                 if(callback){
                     callback(response);
                 }
             }else{
                 if(--try_times){
-                    cc.log("retry on response error: " + url);
-                    http_get(url, callback, params, isPost, errorcallback, try_times);
+                    cc.log("retry on response error: " + url, try_times);
+                    http_get(url, callback, params, isPost, errorcallback, responseType, try_times);
                 }else{
                     var response = xhr.responseText;
                     if(errorcallback)

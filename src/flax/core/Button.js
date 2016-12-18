@@ -208,7 +208,6 @@ flax._buttonDefine = {
     _addListeners: function () {
         if(FRAMEWORK == "cocos") {
             var self = this;
-
             if(flax.inputManager) {
                 flax.inputManager.addListener(this, this._onPress, InputType.press, this);
                 flax.inputManager.addListener(this, this._onClick, InputType.click, this);

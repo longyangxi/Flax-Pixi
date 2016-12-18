@@ -275,7 +275,7 @@ flax.TileMap = cc.Node.extend({
         if(autoAdd === true) {
             sprite.tileMap = this;
         }
-        return {x: tx, y: ty};
+        sprite.setTile(tx, ty);
     },
     snapAll:function()
     {
@@ -724,12 +724,12 @@ flax.Module.TileMap = {
         this._tileMap = null;
         this._tileInited = false;
     },
-    "onPosition":function()
-    {
-        if(this.autoUpdateTileWhenMove && this._tileMap){
-            this.updateTile();
-        }
-    },
+    //"onPosition":function()
+    //{
+    //    if(this.autoUpdateTileWhenMove && this._tileMap){
+    //        this.updateTile();
+    //    }
+    //},
     tileMap: {
         get: function()
         {

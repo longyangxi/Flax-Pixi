@@ -37,11 +37,11 @@ flax.module.enemyWave = {
         }
     },
     "onExit":function(){
-        this.onWaveBegin.removeAll();
+        this.onWaveBegin.dispose();
         this.onWaveBegin = null;
-        this.onEnemyIn.removeAll();
+        this.onEnemyIn.dispose();
         this.onEnemyIn = null;
-        this.onWaveOver.removeAll();
+        this.onWaveOver.dispose();
         this.onWaveOver = null;
         this.batchCanvas = null;
     },

@@ -13,13 +13,17 @@ var InputType = {
     press:"onMouseDown",
     up:"onUp",//The touch position maybe not within the press target
     click:"onClick",
-    move:"onMouseMove",//The touch position maybe not within the press target
+    move:"onMouseMove",//The touch position maybe not within the press target,
+    zoomIn:"onZoomIn",
+    zoomOut:"onZoomOut",
     keyPress:"onKeyPress",
     keyUp:"onKeyUp"
 };
 
+var MULTI_TOUCH_TYPES = ["onZoomIn", "onZoomOut"];
+
 flax.InputManager = cc.Node.extend({
-    swallowTouches:true,
+    swallowTouches:false,
     /**
      * Global switch for touch
      * */
@@ -98,7 +102,7 @@ flax.InputManager = cc.Node.extend({
                 self.inTouching = true;
                 if (!self.enabled) return false;
                 if(!self.nullEnabled) return false;
-                if(this.soleTarget) return false;
+                //if(this.soleTarget) return false;
                 self._dispatchOne(self, touch, event, InputType.press);
                 return true;
             },
@@ -199,6 +203,7 @@ flax.InputManager = cc.Node.extend({
      *                       for keyboard event: func(key){};
      * @param{string} type event type as InputType said
      * @param{cc.Node} context the callback context of "THIS", if null, use target as the context
+     * @param {Boolean} If listening multi touches, default is false
      * Note: If the target is null, then listen the global event, in this instance, be sure to REMOVE the listener manually
      * on the sprite exit, otherwise, a new sprite will not receive the event again!
      * */
@@ -243,7 +248,7 @@ flax.InputManager = cc.Node.extend({
             arr = [];
             this._callbacks[target.__instanceId] = arr;
             if(target != this) {
-                var listener =  this._createListener(target, this.swallowTouches);
+                var listener =  MULTI_TOUCH_TYPES.indexOf(type) > -1 ? this._createMultiListener(target, this.swallowTouches) : this._createListener(target, this.swallowTouches);
                 this._touchListeners[target.__instanceId] = listener;
             }
         }
@@ -320,12 +325,13 @@ flax.InputManager = cc.Node.extend({
     handleTouchBegan:function(touch, event)
     {
         if (!this.enabled) return false;
-
-        var pos = flax.mousePos = this._touchBeginPos = touch.getLocation();
+        if(this._inMultiTouch) return false;
 
         var target = event.getCurrentTarget();
 
         if(this.soleTarget && this.soleTarget != target) return false;
+
+        var pos = flax.mousePos = this._touchBeginPos = touch.getLocation();
 
         if(!flax.ifTouchValid(target, touch)) return false;
 
@@ -337,9 +343,9 @@ flax.InputManager = cc.Node.extend({
         //if currentTarget is cc.Layer or flax.MovieClip and hasn't touch any of it's child, then ignore!
         //todo
         //if((target instanceof cc.Layer || target instanceof flax.MovieClip) && event.target == target) {
-        if((target instanceof cc.Layer) && event.target == target) {
-            return false;
-        }
+        //if((target instanceof cc.Layer) && event.target == target) {
+        //    return false;
+        //}
         this._dispatch(target, touch, event, InputType.press);
 
         if(this.soleTarget) this.soleTarget = null;
@@ -348,6 +354,8 @@ flax.InputManager = cc.Node.extend({
     },
     handleTouchEnded:function(touch, event)
     {
+        if(this._inMultiTouch) return;
+
         var target = event.getCurrentTarget();
 
         event.currentTarget = target;
@@ -363,15 +371,124 @@ flax.InputManager = cc.Node.extend({
     },
     handleTouchMoved:function(touch, event)
     {
+        if (!this.enabled) return;
+        if(this._inMultiTouch) return;
         var target = event.getCurrentTarget();
         flax.mousePos = touch.getLocation();
         this._dispatch(target, touch, event, InputType.move);
     },
+    handleTouchesBegan:function(touches, event)
+    {
+        if (!this.enabled) return;
+        this._updateTouches(touches, event);
+        this._inMultiTouch = this._touchesCount > 1;
+    },
+    handleTouchesEnded:function(touches, event)
+    {
+        this._endTouches(touches)
+    },
+    handleTouchesMoved:function(touches, event)
+    {
+        if (!this.enabled) return;
+        this._parseGesture(touches, event)
+    },
+    _endTouches:function(touches) {
+        for(var i = 0; i < touches.length; i++) {
+            var touch = touches[i];
+            delete this._touches[touch.getID()];
+            this._touchesCount--;
+        }
+        if(this._touchesCount <= 0) {
+            this._prevDist = 0;
+            this._touchesCount = 0;
+            this._inMultiTouch = false;
+        } else if(this._touchesCount < 2) {
+            //this._inMultiTouch = false;
+        }
+    },
+    _updateTouches:function(touches, event) {
+        if(this._touches == null) {
+            this._touches = {}
+        }
+        var hasTouch = false;
+        for(var i = 0; i < touches.length; i++) {
+            var touch = touches[i];
+
+            var pos = touch.getLocation();
+            var target = event.getCurrentTarget();
+
+            if(!flax.ifTouchValid(target, touch)) continue;;
+            //handle the masks
+            if(!this.ifNotMasked(target, pos)) continue;
+
+            var id = touch.getID();
+            var theInfo = this._touches[id];
+            if(!theInfo) {
+                this._touches[id] = {start:touch.getStartLocation(), current:touch.getLocation()};
+                this._touchesCount++;
+            } else {
+                theInfo.start = touch.getStartLocation();
+                theInfo.current = touch.getLocation();
+            }
+            hasTouch = true;
+        }
+        return hasTouch;
+    },
+    _touches:null,
+    _touchesCount:0,
+    _prevDist:0,
+    _inMultiTouch:false,
+    _parseGesture:function(touches, event){
+
+        var hasTouch = this._updateTouches(touches, event);
+
+        var touch0 = null;
+        var touch1 = null;
+
+        for(var id in this._touches) {
+            var touch = this._touches[id];
+            if(!touch0) touch0 = touch;
+            else if(!touch1) touch1 = touch;
+            else break;
+        }
+
+
+        if(!touch0 || !touch1) {
+            return false;
+        }
+
+        //var startDist = flax.getDistance(touch0.start, touch0.current);
+        //var currentDist = flax.getDistance(touch1.start, touch1.current);
+        //var deltaDist = currentDist - startDist;
+
+        //var startDist = flax.getDistance(touch0.start, touch1.start);
+        var currentDist = flax.getDistance(touch0.current, touch1.current);
+        //var deltaDist = currentDist - startDist;
+
+        if(this._prevDist == 0) {
+            this._prevDist = currentDist;
+            return;
+        } else {
+            var deltaDist = currentDist - this._prevDist;
+            this._prevDist = currentDist;
+        }
+        event.zoomDist = deltaDist;
+
+        var target = event.getCurrentTarget();
+        if(deltaDist > 0) {
+            this._dispatchOne(target, touches, event, InputType.zoomIn);
+        } else if (deltaDist < 0) {
+            this._dispatchOne(target, touches, event, InputType.zoomOut);
+        }
+
+        return true;
+    },
     _createListener:function(target, swallow)
     {
         var self = this;
+        var touchType = cc.EventListener.TOUCH_ONE_BY_ONE;
         var listener = cc.EventListener.create({
-            event: cc.EventListener.TOUCH_ONE_BY_ONE,
+            event: touchType,
             swallowTouches: swallow,
             onTouchBegan:function(touch, event)
             {
@@ -387,6 +504,37 @@ flax.InputManager = cc.Node.extend({
             },
             onTouchCancelled:function(touch, event){
                 self.handleTouchEnded(touch, event);
+            }
+        });
+        cc.eventManager.addListener(listener, target);
+        return listener;
+    },
+    _createMultiListener:function(target, swallow)
+    {
+        if(!('touches' in flax.sys.capabilities))
+        {
+            console.log("Multi TOUCHES not supported");
+            return;
+        }
+        var self = this;
+        var touchType = cc.EventListener.TOUCH_ALL_AT_ONCE;
+        var listener = cc.EventListener.create({
+            event: touchType,
+            //swallowTouches: swallow,
+            onTouchesBegan:function(touch, event)
+            {
+                return self.handleTouchesBegan(touch, event);
+            },
+            onTouchesEnded:function(touch, event)
+            {
+                self.handleTouchesEnded(touch, event);
+            },
+            onTouchesMoved:function(touch, event)
+            {
+                self.handleTouchesMoved(touch, event);
+            },
+            onTouchesCancelled:function(touch, event){
+                self.handleTouchesEnded(touch, event);
             }
         });
         cc.eventManager.addListener(listener, target);

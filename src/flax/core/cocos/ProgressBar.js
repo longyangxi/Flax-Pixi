@@ -30,6 +30,7 @@ flax.ProgressBar = flax.Animator.extend({
     },
     setPercentage:function(p)
     {
+        if(isNaN(p)) p = 0;
         if(this.pBar) this.pBar.percentage = p;
     },
     getType:function()
@@ -64,6 +65,8 @@ flax.ProgressBar = flax.Animator.extend({
             }
             this._tween.release();
         }
+        if(isNaN(from)) from = 0;
+        if(isNaN(to)) to = 0;
         this._tween = cc.progressFromTo(duration, from, to);
         this._tween.retain();
         this.pBar.runAction(this._tween);

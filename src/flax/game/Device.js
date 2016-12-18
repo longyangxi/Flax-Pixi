@@ -20,7 +20,7 @@ flax.device = {
                 var w = flax.stageRect.width + 10;
                 var h = flax.stageRect.height + 10;
                 if(FRAMEWORK == "cocos") {
-                    this._imgTip = cc.LayerColor.create(flax.bgColor, w, h);
+                    this._imgTip = new cc.LayerColor(flax.bgColor, w, h);
                 } else {
                     var imgTip = new flax.Graphics();
                     imgTip.beginFill(flax.bgColor);

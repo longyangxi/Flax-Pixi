@@ -13,6 +13,19 @@ flax.resolutionPolicy = null;
 flax.designedStageSize = null;
 flax.REPEAT_FOREVER = Number.MAX_VALUE - 1;
 
+/**
+ * Dispatch when the window resized
+ * */
+flax.onScreenResize = new signals.Signal();
+/**
+ * Dispatch when the window show
+ * */
+flax.onScreenShow = new signals.Signal();
+/**
+ * Dispatch when the window hide
+ * */
+flax.onScreenHide = new signals.Signal();
+
 flax._rendererOptions = null;
 
 flax.isMobile = false;
@@ -85,15 +98,18 @@ flax.init = function(resolutionPolicy, initialUserData, options)
 {
     if(flax.game) flax.frameInterval = 1/flax.game.config["frameRate"];
     if(flax.language) flax.language.init();
-    if(flax.userData) flax.fetchUserData(initialUserData);
 
     flax._rendererOptions = options;
 
     flax._setupModules();
 
+    if(flax.userData) flax.fetchUserData(initialUserData);
+
     if(!options || options.enableRetina !== false) flax.view.enableRetina(true);
 
     flax._setupView(resolutionPolicy, options && options.width, options && options.height);
+
+    flax._addEvents();
 
     flax.log("Flax initialized as an engine, version: " + VERSION);
 };
@@ -109,6 +125,11 @@ flax._setupModules = function()
         flax.spriteFrameCache = cc.spriteFrameCache;
         flax.defineGetterSetter = cc.defineGetterSetter;
         flax.director = cc.director;
+        //Fix the scheduleOnce bug in cocos
+        //if(flax.Module.ScheduleOnce) flax.addModule(flax.Sprite, flax.Module.ScheduleOnce, true);
+        //if(flax.Module.ScheduleOnce) flax.addModule(flax.FlaxSprite, flax.Module.ScheduleOnce, true);
+        //if(flax.Module.ScheduleOnce) flax.addModule(flax.FlaxContainer, flax.Module.ScheduleOnce, true);
+
     }else{
 
     }
@@ -168,8 +189,6 @@ flax._setupView = function (resolutionPolicy, designWidth, designHeight) {
 
     flax.view.setDesignResolutionSize(width, height, resolutionPolicy);
 
-    flax.onScreenResize = new signals.Signal();
-
     if(!flax.sys.isNative) {
         window.addEventListener("resize", function(){
             //flax.stageRect = flax.rect(flax.visibleRect.bottomLeft.x, flax.visibleRect.bottomLeft.y, flax.visibleRect.width, flax.visibleRect.height);
@@ -177,5 +196,57 @@ flax._setupView = function (resolutionPolicy, designWidth, designHeight) {
             if(flax.view.updateView) flax.view.updateView();
             flax.onScreenResize.dispatch();
         }, false);
+    }
+}
+
+flax._addEvents = function () {
+    if(FRAMEWORK == "cocos"){
+        cc.eventManager.addCustomListener(cc.game.EVENT_HIDE, function () {
+            flax.onScreenHide.dispatch();
+        });
+        cc.eventManager.addCustomListener(cc.game.EVENT_SHOW, function () {
+            flax.onScreenShow.dispatch();
+        });
+    }else{
+        var win = window, hidden, visibilityChange, _undef = "undefined";
+        if (typeof document.hidden != _undef) {
+            hidden = "hidden";
+            visibilityChange = "visibilitychange";
+        } else if (typeof document.mozHidden != _undef) {
+            hidden = "mozHidden";
+            visibilityChange = "mozvisibilitychange";
+        } else if (typeof document.msHidden != _undef) {
+            hidden = "msHidden";
+            visibilityChange = "msvisibilitychange";
+        } else if (typeof document.webkitHidden != _undef) {
+            hidden = "webkitHidden";
+            visibilityChange = "webkitvisibilitychange";
+        }
+
+        var onHidden = function () {
+            flax.onScreenHide.dispatch();
+        };
+        var onShow = function () {
+            flax.onScreenShow.dispatch();
+        };
+
+        if (hidden) {
+            win.addEventListener(visibilityChange, function () {
+                if (document[hidden]) onHidden();
+                else onShow();
+            }, false);
+        } else {
+            win.addEventListener("blur", onHidden, false);
+            win.addEventListener("focus", onShow, false);
+        }
+
+        if(navigator.userAgent.indexOf("MicroMessenger") > -1){
+            win.onfocus = function(){ onShow() };
+        }
+
+        if ("onpageshow" in window && "onpagehide" in window) {
+            win.addEventListener("pagehide", onHidden, false);
+            win.addEventListener("pageshow", onShow, false);
+        }
     }
 }

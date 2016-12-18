@@ -1,6 +1,9 @@
 /**
  * Created by long on 15-8-14.
  */
+
+flax.ZERO_RECT = {x: 0, y: 0, width: 0, height: 0};
+
 flax.rect = function(x, y, w, h)
 {
     if(FRAMEWORK == "pixi"){

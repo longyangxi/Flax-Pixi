@@ -255,10 +255,14 @@ flax.destroyPhysicsWorld = function(){
         if(sprite) sprite._physicsBody = null;
         flax._physicsWorld.DestroyBody(b);
     }
-    flax.onCollideStart.removeAll();
-    flax.onCollideEnd.removeAll();
-    flax.onCollidePre.removeAll();
-    flax.onCollidePost.removeAll();
+    flax.onCollideStart.dispose();
+    flax.onCollideStart = null;
+    flax.onCollideEnd.dispose();
+    flax.onCollideEnd = null;
+    flax.onCollidePre.dispose();
+    flax.onCollidePre = null;
+    flax.onCollidePost.dispose();
+    flax.onCollidePost = null;
 
     flax._physicsWorld = null;
     flax._physicsListener = null;

@@ -141,6 +141,7 @@ flax._movieClip = {
             return false;
         }
         var child = this.namedChildren[childName];
+        //console.log(child)
         if(child)
         {
             if(!assetsFile) assetsFile = this.assetsFile;

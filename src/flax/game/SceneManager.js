@@ -97,7 +97,8 @@ flax.replaceScene = function(sceneName, transition, duration)
             }
         }
         if (!transitioned) {
-            flax.director.runScene(flax.currentScene, s.renderMode);
+            //flax.director.runScene(flax.currentScene, s.renderMode);
+            flax.director.runScene(flax.currentScene);
         }
 
         if(flax.device) flax.device.showTipTop();

@@ -138,6 +138,12 @@ flax.ListView = flax.MovieClip.extend({
         this.refresh();
         return true;
     },
+    scrollToTop:function(speed) {
+       this.scrollToIndex(0, speed);
+    },
+    scrollToBottom:function(speed) {
+        this.scrollToIndex(this.dataArray.length - 1, speed);
+    },
     scrollToIndex: function (index, speed) {
         if(this.viewArray.length < 1) return;
         if(index  < 0) index = 0;
