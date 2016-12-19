@@ -329,12 +329,12 @@ flax._movieClip = {
      * Special for PIXI to make the anchor sense for Container
      * */
     //_updateTransform: function () {
-    //    var pt = this.parent.worldTransform;
-    //    var wt = this.worldTransform;
-    //    var dx = this._gRect.width * this.anchor.x;
-    //    var dy = this._gRect.height * this.anchor.y;
-    //    wt.tx -= dx * pt.a + dy * pt.c;
-    //    wt.ty -= dx * pt.b + dy * pt.d;
+        //var pt = this.parent.worldTransform;
+        //var wt = this.worldTransform;
+        //var dx = this._gRect.width * this.anchor.x;
+        //var dy = this._gRect.height * this.anchor.y;
+        //wt.tx -= dx * pt.a + dy * pt.c;
+        //wt.ty -= dx * pt.b + dy * pt.d;
     //},
     doRenderFrame:function(frame)
     {

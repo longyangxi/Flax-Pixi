@@ -35,8 +35,8 @@ PIXI.Container.prototype.getContentSize = PIXI.Sprite.prototype.getBounds;
 PIXI.Container.prototype.setContentSize = function(w, h){/**do nothing now*/};
 
 ///**
-// * Override the function to invoke a sub function of _updateTransform
-// * */
+//* Override the function to invoke a sub function of _updateTransform
+//* */
 //PIXI.Container.prototype.updateTransform = function ()
 //{
 //    if (!this.visible)

@@ -23,16 +23,14 @@ flax.Collider = flax.Class.extend({
     _localRect:null,
     _polygons:null,
     _originData:null,
-    _centerAnchor:false,
     _clickArea:null,
     _debugNode:null,
-    ctor:function(data, centerAnchor){
-        this.init(data, centerAnchor)
+    ctor:function(data){
+        this.init(data)
     },
-    init:function(data, centerAnchor){
+    init:function(data){
 
         this._originData = data;
-        this._centerAnchor = centerAnchor;
 
         data = data.split(",");
         this.type = data[0];
@@ -49,11 +47,6 @@ flax.Collider = flax.Class.extend({
                 this._polygons.push(pos);
             }
         }
-
-        if(centerAnchor === false) {
-            this._center.x += this._width/2;
-            this._center.y += this._height/2;
-        }
         this._localRect = flax.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
     },
     destroy: function () {
@@ -63,7 +56,7 @@ flax.Collider = flax.Class.extend({
         this._debugNode = null;
     },
     clone: function () {
-        return new flax.Collider(this._originData, this._centerAnchor)
+        return new flax.Collider(this._originData)
     },
     setOwner:function(owner)
     {
@@ -145,15 +138,18 @@ flax.Collider = flax.Class.extend({
     },
     getBounds:function(coordinate){
 
-        if(coordinate == null) coordinate = true;
-        if(!coordinate) return this._localRect;
+        //if(FRAMEWORK == "cocos") {
+            if(coordinate == null) coordinate = true;
+            if(!coordinate) return this._localRect;
 
-        var center = this.getCenter(coordinate);
+            var center = this.getCenter(coordinate);
 
-        var size = this.getSize(coordinate);
+            var size = this.getSize(coordinate);
 
-        var rect = flax.rect(center.x - size.width/2, center.y - size.height/2, size.width, size.height);
+            var rect = flax.rect(center.x - size.width/2, center.y - size.height/2, size.width, size.height);
+        //} else {
 
+        //}
         return rect;
     },
     getCenter:function(coordinate){
@@ -317,7 +313,16 @@ flax.Module.Collider = {
             w = this.width;
             h = this.height;
         }
-        this._mainCollider = new flax.Collider("Rect,0,0," + w + "," + h + ",0", false);//, FRAMEWORK != "cocos");
+        var cx = w/2;
+        var cy = h/2;
+        //todo, fix in cocos as pixi
+        if(FRAMEWORK == "cocos") {
+            this._mainCollider = new flax.Collider("Rect," + cx + "," + cy + "," + w + "," + h + ",0");
+        } else {
+            cx -= this.anchor.x*w;
+            cy -= this.anchor.y*h;
+            this._mainCollider = new flax.Collider("Rect," + cx + "," + cy + "," + w + "," + h + ",0");
+        }
         this._mainCollider.name = "main";
         this._mainCollider.setOwner(this);
     },
