@@ -82,7 +82,9 @@
       "common" : [
         "modules/ScreenLayout.js",
         "modules/Collider.js",
-        "modules/Move.js"
+        "modules/Move.js",
+        "modules/Shake.js",
+        "utils/http_get.js"
       ]
     },
     "extras" : {

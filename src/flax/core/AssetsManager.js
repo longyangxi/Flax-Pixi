@@ -137,8 +137,11 @@ flax.AssetsManager = flax.Class.extend({
                     clsName = isMC ? flax._assetsMcClassMap[clsName] : flax._assetsClassMap[clsName];
                     //Handle the scale9Image
                     if(clsName == "flax.Image" && define['scale9']){
-                        clsName = "flax.Scale9Image";
-                        if(flax.Scale9Image == null) throw "Please add module of 'gui' or 'ccui'(cocos 3.10 later) into project.json if you want to use Scale9Image!";
+                        if(flax.Scale9Image != null) {
+                            clsName = "flax.Scale9Image";
+                        } else {
+                            console.warn("Please add module of 'gui' or 'ccui'(cocos 3.10 later) into project.json if you want to use Scale9Image!");
+                        }
                     }
                     mcCls = flax.nameToObject(clsName);
                 }

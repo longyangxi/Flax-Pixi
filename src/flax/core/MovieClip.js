@@ -328,15 +328,14 @@ flax._movieClip = {
     /**
      * Special for PIXI to make the anchor sense for Container
      * */
-    _updateTransform: function () {
-
-        var pt = this.parent.worldTransform;
-        var wt = this.worldTransform;
-        var dx = this._gRect.width * this.anchor.x;
-        var dy = this._gRect.height * this.anchor.y;
-        wt.tx -= dx * pt.a + dy * pt.c;
-        wt.ty -= dx * pt.b + dy * pt.d;
-    },
+    //_updateTransform: function () {
+    //    var pt = this.parent.worldTransform;
+    //    var wt = this.worldTransform;
+    //    var dx = this._gRect.width * this.anchor.x;
+    //    var dy = this._gRect.height * this.anchor.y;
+    //    wt.tx -= dx * pt.a + dy * pt.c;
+    //    wt.ty -= dx * pt.b + dy * pt.d;
+    //},
     doRenderFrame:function(frame)
     {
         var frames = this.define.frames[frame];
@@ -583,6 +582,13 @@ flax._movieClip = {
         //In cocos, remove all children
         if(this.autoRecycle && FRAMEWORK == "cocos")
             this.removeAllChildren(true);
+    },
+    /**
+     * Override pixi's getBounds
+     * */
+    getBounds:function(coordinate){
+        var mCol = this.mainCollider;
+        return mCol.getBounds(coordinate);
     }
 };
 

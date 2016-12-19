@@ -227,8 +227,11 @@ flax.InputManager = flax.Container.extend({
     removeAllTouchListeners:function()
     {
         for(var id in this._callbacks){
-            var callback = this._callbacks[id];
-            callback.target.removeListener(callback.type, callback.func, callback.context);
+            var cs = this._callbacks[id];
+            for(var i in cs) {
+                var callback = cs[i];
+                callback.target.removeListener(callback.type, callback.func, callback.context);
+            }
         }
         this.soleTarget = null;
         this._callbacks = {};

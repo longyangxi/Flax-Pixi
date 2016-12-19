@@ -85,4 +85,20 @@ flax.Loader = flax.Class.extend({
     }
 });
 
+flax.loadJsonSync = function (url) {
+    var http = new XMLHttpRequest();
+    http.open("GET", url, false);
+    if (/msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)) {
+        // IE-specific logic here
+        http.setRequestHeader("Accept-Charset", "utf-8");
+    } else {
+        if (http.overrideMimeType) http.overrideMimeType("text\/plain; charset=utf-8");
+    }
+    http.send(null);
+    if (!http.readyState === 4 || http.status !== 200) {
+        return null;
+    }
+    return JSON.parse(http.responseText);
+}
+
 flax.loader = new flax.Loader();

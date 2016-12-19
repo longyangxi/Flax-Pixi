@@ -303,10 +303,23 @@ flax.Module.Collider = {
         }
         this._definedMainCollider = (this._mainCollider != null);
         if(!this._definedMainCollider){
-            this._mainCollider = new flax.Collider("Rect,0,0," + this.width + "," + this.height + ",0", FRAMEWORK != "cocos");
-            this._mainCollider.name = "main";
-            this._mainCollider.setOwner(this);
+            this._initMainCollider();
         }
+    },
+    _initMainCollider:function(){
+        var w = 0;
+        var h = 0;
+
+        if(this.__isMovieClip) {
+            w = this._gRect.width;
+            h = this._gRect.height;
+        } else {
+            w = this.width;
+            h = this.height;
+        }
+        this._mainCollider = new flax.Collider("Rect,0,0," + w + "," + h + ",0", false);//, FRAMEWORK != "cocos");
+        this._mainCollider.name = "main";
+        this._mainCollider.setOwner(this);
     },
     "onEnter": function() {
         
@@ -342,7 +355,7 @@ flax.Module.Collider = {
             if(this._mainCollider) {
                 //fix the zero size bug
                 if((this._mainCollider._width == 0 && this.width > 0) || (this._mainCollider._height == 0 && this.height > 0)) {
-                    this._mainCollider.init("Rect,0,0," + this.width + "," + this.height + ",0", FRAMEWORK != "cocos");
+                    this._initMainCollider();
                 }
             }
             return this._mainCollider || flax.ZERO_RECT;

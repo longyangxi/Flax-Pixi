@@ -32,38 +32,39 @@ PIXI.Container.prototype.convertToNodeSpace = function (pos, from) {
 }
 
 PIXI.Container.prototype.getContentSize = PIXI.Sprite.prototype.getBounds;
-PIXI.Container.prototype.setContentSize = function(){/*do nothing*/};
-/**
- * Override the function to invoke a sub function of _updateTransform
- * */
-PIXI.Container.prototype.updateTransform = function ()
-{
-    if (!this.visible)
-    {
-        return;
-    }
+PIXI.Container.prototype.setContentSize = function(w, h){/**do nothing now*/};
 
-    this.displayObjectUpdateTransform();
+///**
+// * Override the function to invoke a sub function of _updateTransform
+// * */
+//PIXI.Container.prototype.updateTransform = function ()
+//{
+//    if (!this.visible)
+//    {
+//        return;
+//    }
+//
+//    this.displayObjectUpdateTransform();
+//
+//    /**
+//     * Add the hook for sub class to update transform, especially for anchor
+//     * */
+//    if(this._updateTransform) {
+//        this._updateTransform();
+//    }
+//
+//    for (var i = 0, j = this.children.length; i < j; ++i)
+//    {
+//        this.children[i].updateTransform();
+//    }
+//
+//    if(this.scale.x == undefined) {
+//        throw "The scale of a DisplayObject must be a Point!"
+//    }
+//};
+//// performance increase to avoid using call.. (10x faster)
+//PIXI.Container.prototype.containerUpdateTransform = PIXI.Container.prototype.updateTransform;
 
-    /**
-     * Add the hook for sub class to update transform, especially for anchor
-     * */
-    if(this._updateTransform) {
-        this._updateTransform();
-    }
-
-    for (var i = 0, j = this.children.length; i < j; ++i)
-    {
-        this.children[i].updateTransform();
-    }
-
-    if(this.scale.x == undefined) {
-        throw "The scale of a DisplayObject must be a Point!"
-    }
-};
-
-// performance increase to avoid using call.. (10x faster)
-PIXI.Container.prototype.containerUpdateTransform = PIXI.Container.prototype.updateTransform;
 
 PIXI.Container.prototype.addChildAt = function (child, index)
 {
@@ -169,11 +170,13 @@ flax.Container = PIXI.Container.extend({
         if(!(this instanceof flax.FlaxContainer)) {
             flax.callModuleOnEnter(this);
         }
+        this._super();
     },
     onExit: function () {
         if(!(this instanceof flax.FlaxContainer)) {
             flax.callModuleOnExit(this);
         }
+        this._super();
     }
 })
 
@@ -194,11 +197,13 @@ flax.Sprite = PIXI.Sprite.extend({
         if(!(this instanceof flax.FlaxSprite)) {
             flax.callModuleOnEnter(this);
         }
+        this._super();
     },
     onExit: function () {
         if(!(this instanceof flax.FlaxSprite)) {
-            flax.callModuleOnExit(this);
+            flax.callModuleOnExit(this)
         }
+        this._super();
     }
 })
 
@@ -224,6 +229,8 @@ flax.Scene = flax.Container.extend({
         this._super();
         flax.__scene_ready = false;
         this.scheduleOnce(function () {
+            //todo, somtimes wrong
+            flax.currentScene = this;
             flax.__scene_ready = true;
         }, 0.01);
     }

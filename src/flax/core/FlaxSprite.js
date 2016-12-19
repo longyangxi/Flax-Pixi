@@ -469,7 +469,7 @@ flax._sprite = {
                 this.onAnimationOver.dispatch(this);
             }
 
-            //if(!this.running) return;
+            if(!this.running) return;
 
             if(this.autoDestroyWhenOver) {
                 this.destroy();
@@ -483,7 +483,7 @@ flax._sprite = {
             this._animTime = 0;
         }
 
-        //if(!this.running) return;
+        if(!this.running) return;
 
         end = !reversed  ? this.currentFrame > this._loopEnd : this.currentFrame < this._loopEnd;
         var last = !reversed ? this.currentFrame > this.totalFrames - 1 : this.currentFrame < 0;

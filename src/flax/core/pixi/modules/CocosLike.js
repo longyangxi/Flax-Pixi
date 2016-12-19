@@ -22,6 +22,10 @@ flax.Module.CocosLike = {
         if(!this.children) this.children = [];
         this._childrenEnter();
         if(this._toIndex != null) {
+            if(this._toIndex >= this.parent.childrenCount) {
+                //console.warn("The child index: " + this._toIndex + " is out of bounds!");
+                this._toIndex = this.parent.childrenCount - 1;
+            }
             this.parent.setChildIndex(this, this._toIndex);
             this._toIndex = null;
         }

@@ -18,7 +18,7 @@ flax.fetchUserData = function(defaultValue, cookieID) {
         if(!flax.cookieData) flax.cookieData = {};
         flax.cookieData = JSON.parse(flax.cookieData);
     }catch(e){
-        cc.log("Fetch UserData Error: "+ e.name);
+        console.log("Fetch UserData Error: "+ e.name);
     }
     if(defaultValue) flax.userData = defaultValue;
     if(cookieID && !defaultValue && (cookieID != flax.cookieID || cookieID != "default")) flax.userData = {};
@@ -41,6 +41,6 @@ flax.saveUserData =  function(cookieID) {
         flax.cookieData['lastUser'] = flax.cookieID;
         flax.sys.localStorage.setItem(flax.game.config['gameId'], JSON.stringify(flax.cookieData));
     }catch (e){
-        cc.log("Save UserData Error: "+ e.name);
+        console.log("Save UserData Error: "+ e.name);
     }
 };

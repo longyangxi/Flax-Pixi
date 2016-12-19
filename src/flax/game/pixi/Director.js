@@ -14,12 +14,8 @@ flax.Game = flax.Class.extend({
     onStart: null,
     run: function () {
         var self = this;
-        var json = 'project.json?v' + Math.random();
-        flax.loader.load(json, function(){
-            self.config = flax.loader.getRes(json);
-            self.init();
-            if(self.onStart) self.onStart();
-        })
+        self.init();
+        if(self.onStart) self.onStart();
     },
     init: function () {
         flax.scheduler = new flax.Scheduler();
@@ -28,6 +24,8 @@ flax.Game = flax.Class.extend({
 })
 
 flax.game = new flax.Game();
+
+flax.game.config = flax.loadJsonSync('project.json?v' + Math.random());
 
 /////////////////////////////////////////////////////////////////////////////////////
 

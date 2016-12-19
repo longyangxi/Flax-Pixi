@@ -49,8 +49,55 @@ flax.getLayoutPosition = function(target, hLayout, vLayout)
     }
 
     var scale = FRAMEWORK == "cocos" ? flax.getScale(target, true) : {x:1.0, y: 1.0};
+
     var offsetX = !hLayout ? flax.visibleRect.bottomLeft.x : 0;
     var offsetY = !vLayout ? flax.visibleRect.bottomLeft.y : 0;
+
+    var pos = flax.p(x + offsetX + anchorPos.x*scale.x, y + offsetY + anchorPos.y*scale.y);
+
+    if(target.parent){
+        pos = target.parent.convertToNodeSpace(pos);
+    }
+    return pos;
+}
+
+flax.getLayoutPosition_old = function(target, hLayout, vLayout)
+{
+    var rect = flax.getBounds(target, true);
+    var sCenter = flax.visibleRect.center;
+    var anchorPos = target.getAnchorPointInPoints();
+
+    var x = 0;
+    var y = 0;
+
+    switch(hLayout){
+        case HLayoutType.LEFT:
+            x = 0;
+            break;
+        case HLayoutType.CENTER:
+            x = sCenter.x - rect.width/2;
+            break;
+        case HLayoutType.RIGHT:
+            x = flax.visibleRect.right.x - rect.width;
+            break;
+    }
+    switch(vLayout){
+        case VLayoutType.BOTTOM:
+            y = 0;
+            break;
+        case VLayoutType.MIDDLE:
+            y = sCenter.y - rect.height/2;
+            break;
+        case VLayoutType.TOP:
+            y = flax.visibleRect.top.y - rect.height;
+            break;
+    }
+
+    var scale = FRAMEWORK == "cocos" ? flax.getScale(target, true) : {x:1.0, y: 1.0};
+
+    var offsetX = !hLayout ? flax.visibleRect.bottomLeft.x : 0;
+    var offsetY = !vLayout ? flax.visibleRect.bottomLeft.y : 0;
+
     var pos = flax.p(x + offsetX + anchorPos.x*scale.x, y + offsetY + anchorPos.y*scale.y);
 
     if(target.parent){
@@ -120,7 +167,7 @@ flax.Module.ScreenLayout = {
 
         this._isAutoLayout = true;
 
-        //todo, pixi用getboudns比较准确
+        //todo, pixi用geBounds比较准确
         //var rect = flax.getRect(this, this.parent);
         var rect = this.getBounds();
         var sCenter = flax.visibleRect.center;

@@ -77,7 +77,9 @@ PIXI.Text.prototype.wordWrap = function (text)
     return result;
 };
 
-
+PIXI.Text.prototype.setString = function(text) {
+    this.text = text;
+}
 
 flax.createLabel = function(assetsFile, data, define)
 {
