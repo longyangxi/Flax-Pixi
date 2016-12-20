@@ -16,48 +16,37 @@ var VLayoutType = {
     TOP:2
 }
 
+var LayoutRate = [0, 0.5, 1.0];
+var LayoutRate1 = [1.0, 0.5, 0];
+
 flax.getLayoutPosition = function(target, hLayout, vLayout)
 {
-    var rect = flax.getBounds(target, true);
-    var sCenter = flax.visibleRect.center;
-    var anchorPos = target.getAnchorPointInPoints();
+    var rect = flax.getBounds(target, false);
+    var screenRect = flax.visibleRect;
 
-    var x = 0;
-    var y = 0;
+    var x = screenRect.hArr[hLayout];
+    var y = screenRect.vArr[vLayout];
 
-    switch(hLayout){
-        case HLayoutType.LEFT:
-            x = 0;
-            break;
-        case HLayoutType.CENTER:
-            x = sCenter.x - rect.width/2;
-            break;
-        case HLayoutType.RIGHT:
-            x = flax.visibleRect.right.x - rect.width;
-            break;
-    }
-    switch(vLayout){
-        case VLayoutType.BOTTOM:
-            y = 0;
-            break;
-        case VLayoutType.MIDDLE:
-            y = sCenter.y - rect.height/2;
-            break;
-        case VLayoutType.TOP:
-            y = flax.visibleRect.top.y - rect.height;
-            break;
+    if(x == null || y == null) {
+        throw "Invalid layout!"
     }
 
-    var scale = FRAMEWORK == "cocos" ? flax.getScale(target, true) : {x:1.0, y: 1.0};
+    var pos = flax.p(x, y);
 
-    var offsetX = !hLayout ? flax.visibleRect.bottomLeft.x : 0;
-    var offsetY = !vLayout ? flax.visibleRect.bottomLeft.y : 0;
+    var cx = rect.x + LayoutRate[hLayout]*rect.width;
+    var lRate = FRAMEWORK == "cocos" ? LayoutRate : LayoutRate1;
+    var cy = rect.y + lRate[vLayout]*rect.height;
 
-    var pos = flax.p(x + offsetX + anchorPos.x*scale.x, y + offsetY + anchorPos.y*scale.y);
+    pos.x -= cx;
+    pos.y -= cy;
 
-    if(target.parent){
-        pos = target.parent.convertToNodeSpace(pos);
-    }
+    //if(target.parent){
+    //    if(flax.currentScene) {
+    //        pos = flax.currentScene.convertToWorldSpace(pos);
+    //        pos = target.parent.convertToNodeSpace(pos);
+    //    }
+    //}
+
     return pos;
 }
 

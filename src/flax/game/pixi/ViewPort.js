@@ -71,6 +71,8 @@ flax.visibleRect = {
     right:flax.p(0,0),
     width:0,
     height:0,
+    hArr:null,
+    vArr:null,
 
     /**
      * initialize
@@ -84,6 +86,15 @@ flax.visibleRect = {
             b = visibleRect.y,
             t = b + h,
             r = l + w;
+
+        var cy = b + h/2;
+
+        //Topleft coordinate
+        if(FRAMEWORK != "cocos") {
+            var temp = b;
+            b = t;
+            t = temp;
+        }
 
         //top
         this.topLeft.x = l;
@@ -103,14 +114,17 @@ flax.visibleRect = {
 
         //center
         this.center.x = l + w/2;
-        this.center.y = b + h/2;
+        this.center.y = cy;
 
         //left
         this.left.x = l;
-        this.left.y = b + h/2;
+        this.left.y = cy;
 
         //right
         this.right.x = r;
-        this.right.y = b + h/2;
+        this.right.y = cy;
+
+        this.hArr = [l, this.center.x, r];
+        this.vArr = [b, this.center.y, t];
     }
 };

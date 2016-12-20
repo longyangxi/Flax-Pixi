@@ -137,19 +137,14 @@ flax.Collider = flax.Class.extend({
         return (dx*dx+dy*dy<=(circle.width/2*circle.width/2));
     },
     getBounds:function(coordinate){
+        if(coordinate == null) coordinate = true;
+        if(!coordinate) return this._localRect;
 
-        //if(FRAMEWORK == "cocos") {
-            if(coordinate == null) coordinate = true;
-            if(!coordinate) return this._localRect;
+        var center = this.getCenter(coordinate);
 
-            var center = this.getCenter(coordinate);
+        var size = this.getSize(coordinate);
 
-            var size = this.getSize(coordinate);
-
-            var rect = flax.rect(center.x - size.width/2, center.y - size.height/2, size.width, size.height);
-        //} else {
-
-        //}
+        var rect = flax.rect(center.x - size.width/2, center.y - size.height/2, size.width, size.height);
         return rect;
     },
     getCenter:function(coordinate){

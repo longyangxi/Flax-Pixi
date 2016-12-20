@@ -242,6 +242,31 @@ flax.InputManager = flax.Container.extend({
         if(this._keyboardListener) {
             this._keyboardListener = null;
         }
+    },
+    /**
+     * Add a Sprite node which will permitted the lower sprite to get touch event callback
+     * */
+    addMask:function(mask){
+        //if(this._masks.indexOf(mask) > -1) return;
+        //this._masks.push(mask);
+        //mask.__isInputMask = true;
+    },
+    removeMask:function(mask){
+        //if(!this.running) return;
+        //var i = this._masks.indexOf(mask);
+        //if(i > -1) {
+        //    this._masks.splice(i, 1);
+        //    mask.__isInputMask = false;
+        //}
+    },
+    removeAllMasks:function(){
+        //if(!this.running) return;
+        //var i = this._masks.length;
+        //while(i--){
+        //    this._masks[i].__isInputMask = false;
+        //    this._masks.splice(i, 1);
+        //}
+        //this._masks.length = 0;
     }
 });
 

@@ -596,7 +596,6 @@ flax._sprite = {
     },
     onEnter:function()
     {
-        this._super();
         this._destroyed = false;
         this._updateLaguage();
         //call the module onEnter
@@ -615,6 +614,8 @@ flax._sprite = {
             stencil.x = stencil.__originPos.x + this.x - ap.x;
             stencil.y = stencil.__originPos.y + this.y - ap.y;
         }
+        //todo
+        this._super();
     },
     onExit:function()
     {

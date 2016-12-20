@@ -208,6 +208,7 @@ flax.Sprite = PIXI.Sprite.extend({
 })
 
 flax.SpriteBatchNode = flax.Sprite;
+flax.FlaxSpriteBatch = flax.Sprite;
 
 /////////////////////////////////////////////////////////////////////////////////////
 

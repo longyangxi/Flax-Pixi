@@ -138,7 +138,6 @@ flax.Director = flax.Class.extend({
                 parentStyle.margin = "0 auto";
             }
         }
-
         flax.visibleRect.init(flax.rect(-lx/sx, -ly/sy, (realWidth + 2*lx)/sx, (realHeight + 2*ly)/sy));
     }
 })
