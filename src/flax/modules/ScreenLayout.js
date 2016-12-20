@@ -24,6 +24,11 @@ flax.getLayoutPosition = function(target, hLayout, vLayout)
     var rect = flax.getBounds(target, false);
     var screenRect = flax.visibleRect;
 
+    if(FRAMEWORK == "cocos" && screenRect.hArr == null) {
+        screenRect.hArr = [screenRect.left.x,   screenRect.center.x, screenRect.right.x];
+        screenRect.vArr = [screenRect.bottom.y, screenRect.center.y, screenRect.top.y];
+    }
+
     var x = screenRect.hArr[hLayout];
     var y = screenRect.vArr[vLayout];
 
@@ -40,12 +45,11 @@ flax.getLayoutPosition = function(target, hLayout, vLayout)
     pos.x -= cx;
     pos.y -= cy;
 
-    //if(target.parent){
-    //    if(flax.currentScene) {
-    //        pos = flax.currentScene.convertToWorldSpace(pos);
-    //        pos = target.parent.convertToNodeSpace(pos);
-    //    }
-    //}
+    if(FRAMEWORK == "cocos") {
+        if(target.parent){
+            pos = target.parent.convertToNodeSpace(pos);
+        }
+    }
 
     return pos;
 }
