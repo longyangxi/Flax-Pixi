@@ -247,17 +247,22 @@ flax.InputManager = flax.Container.extend({
      * Add a Sprite node which will permitted the lower sprite to get touch event callback
      * */
     addMask:function(mask){
+        this.addListener(mask, this.maskFunc);
         //if(this._masks.indexOf(mask) > -1) return;
         //this._masks.push(mask);
         //mask.__isInputMask = true;
     },
     removeMask:function(mask){
+        this.removeListener(mask, this.maskFunc);
         //if(!this.running) return;
         //var i = this._masks.indexOf(mask);
         //if(i > -1) {
         //    this._masks.splice(i, 1);
         //    mask.__isInputMask = false;
         //}
+    },
+    maskFunc: function() {
+
     },
     removeAllMasks:function(){
         //if(!this.running) return;

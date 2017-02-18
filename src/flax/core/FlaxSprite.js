@@ -743,9 +743,9 @@ flax._sprite = {
             pool.recycle(this);
         }
         //todo, handlle destroy in pixi
-        //if(FRAMEWORK == "cocos") this.removeFromParent();
-        //else this._super();
-        this.removeFromParent()
+        if(FRAMEWORK == "cocos") this.removeFromParent();
+        else this._super();
+        //this.removeFromParent()
         this.autoRecycle = false;
     },
     /**

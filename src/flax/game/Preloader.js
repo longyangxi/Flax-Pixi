@@ -12,6 +12,8 @@ flax.goHomeUrl = function()
 flax.AbstractPreloader = flax.Scene.extend({
     callback:null,
     context:null,
+    handleIndex:-1,
+    resourcesNotUsed:null,
     initWithResources: function (resources, callback, context) {
         if(typeof resources == "string")
             resources = [resources];
@@ -20,33 +22,62 @@ flax.AbstractPreloader = flax.Scene.extend({
         this.context = context;
     },
     onEnter: function () {
-        if (flax.InputManager) {
-            flax.inputManager = new flax.InputManager();
-            this.addChild(flax.inputManager, 999999);
-        }
         this._super();
         //this.startLoad();
     },
     onExit: function () {
         this._super();
+        this.resourcesNotUsed = null;
     },
     startLoad: function () {
         var self = this;
-        flax.loader.load(self.resources,
-            function (result, count, loadedCount) {
-                self._showProgress(count, loadedCount);
-            }, function () {
-                self.onLoadComplete();
-            });
+        self._showProgress(self.resources.length, 1);
+        if(FRAMEWORK == "cocos" && flax.sys.isNative) {
+            this.schedule(self._handleAssets, flax.frameInterval)
+        } else {
+            self._removeUsedAssets();
+            flax.loader.load(self.resources,
+                function (result, count, loadedCount) {
+                    self._showProgress(count, loadedCount);
+                }, function () {
+                    self.onLoadComplete();
+                });
+        }
+
+    },
+    _handleAssets:function() {
+        var self = this;
+        if(self.handleIndex == -1) {
+            self._removeUsedAssets();
+            self.handleIndex++;
+            return;
+        }
+        var reses = self.resources;
+        if(this.handleIndex >= reses.length) {
+            this.unscheduleUpdate();
+            self.onLoadComplete();
+            return;
+        }
+        self._showProgress(reses.length, this.handleIndex + 1);
+        var res = reses[this.handleIndex];
+        if(res.indexOf(".plist") > -1) {
+            flax.assetsManager.addAssets(res, false);
+        }
+        this.handleIndex++;
+    },
+    _removeUsedAssets:function(){
+        if(!this.resourcesNotUsed) return;
+        //If switched a new scene, remove all the assets used in prev scene
+        for(var i in this.resourcesNotUsed) {
+            flax.assetsManager.removeAssets(this.resourcesNotUsed[i], true);
+        }
+        if(FRAMEWORK == "cocos") cc.sys.garbageCollect();
     },
     _showProgress:function(count, loadedCount)
     {
        //to be override
     },
     onLoadComplete: function () {
-        if(flax.inputManager) {
-            flax.inputManager.removeFromParent();
-        }
         if (this.callback)
         {
             this.callback.apply(this.context);

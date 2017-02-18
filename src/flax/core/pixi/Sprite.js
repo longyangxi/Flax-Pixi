@@ -177,6 +177,12 @@ flax.Container = PIXI.Container.extend({
             flax.callModuleOnExit(this);
         }
         this._super();
+    },
+    destroy: function () {
+        if(this.parent) {
+            this.parent.removeChild(this);
+        }
+        PIXI.Container.prototype.destroy.call(this);
     }
 })
 
@@ -191,7 +197,13 @@ flax.Sprite = PIXI.Sprite.extend({
         }
         this._super(fileOrTexture);
         //default anchor is 0.5
-        this.anchor.x = this.anchor.y = 0.5;
+        //this.anchor.x = this.anchor.y = 0.5;
+    },
+    destroy: function () {
+        if(this.parent) {
+            this.parent.removeChild(this);
+        }
+        PIXI.Sprite.prototype.destroy.call(this);
     },
     onEnter: function () {
         if(!(this instanceof flax.FlaxSprite)) {

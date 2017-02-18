@@ -37,11 +37,28 @@ if(window.navigator) {
     flax.isMobile = true;
 }
 
+flax.loadJsonSync = function (url) {
+    var http = new XMLHttpRequest();
+    http.open("GET", url, false);
+    if (/msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)) {
+        // IE-specific logic here
+        http.setRequestHeader("Accept-Charset", "utf-8");
+    } else {
+        if (http.overrideMimeType) http.overrideMimeType("text\/plain; charset=utf-8");
+    }
+    http.send(null);
+    if (!http.readyState === 4 || http.status !== 200) {
+        return null;
+    }
+    return JSON.parse(http.responseText);
+}
+
 if(FRAMEWORK == "cocos"){
     flax.Sprite = cc.Sprite;
     flax.SpriteBatchNode = cc.SpriteBatchNode;
     flax.Scale9Sprite = cc.Scale9Sprite;
     flax.game = cc.game;
+    if(!cc.sys.isNative) flax.game.config = flax.loadJsonSync("project.json");
     flax.Scene = cc.Scene;
     flax.sys = cc.sys;
     flax.ResolutionPolicy = cc.ResolutionPolicy;
@@ -98,6 +115,17 @@ flax.init = function(resolutionPolicy, initialUserData, options)
 {
     if(flax.game) flax.frameInterval = 1/flax.game.config["frameRate"];
     if(flax.language) flax.language.init();
+
+    var orientation = flax.game.config['orientation'];
+
+    if(orientation) {
+        if(orientation == "portrait" || orientation == "landscape") {
+            //use the cordova orientation plugin: https://github.com/apache/cordova-plugin-screen-orientation
+            if(window.screen && window.screen.lockOrientation) {
+                window.screen.lockOrientation(orientation);
+            }
+        }
+    }
 
     flax._rendererOptions = options;
 

@@ -69,7 +69,7 @@ function http_get(url, callback, params, isPost, errorcallback, responseType, tr
                 }
             }else{
                 if(--try_times){
-                    cc.log("retry on response error: " + url, try_times);
+                    console.log("retry on response error: " + url, try_times);
                     http_get(url, callback, params, isPost, errorcallback, responseType, try_times);
                 }else{
                     var response = xhr.responseText;
@@ -78,7 +78,7 @@ function http_get(url, callback, params, isPost, errorcallback, responseType, tr
                 }
             }
         }else{
-            //cc.log(xhr.status + ", " + xhr.readyState)
+            //console.log(xhr.status + ", " + xhr.readyState)
         }
         clearTimeout(tId);
     }

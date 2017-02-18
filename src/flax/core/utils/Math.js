@@ -132,3 +132,27 @@ flax.createDInts = function(count, centerInt)
     }
     return ds;
 };
+
+/**
+ * Create an random int array between min and max with length
+ * */
+flax.createRandInts = function(min, max, length, noDuplicate)
+{
+    var arr = [];
+
+    var maxLength = max - min;
+    if(length <= 0 || maxLength <= 0 || maxLength < length) return arr;
+
+    while(arr.length < length) {
+        var i = flax.randInt(min, max);
+        if(noDuplicate !== false) {
+            if(arr.indexOf(i) == -1) {
+                arr.push(i);
+            }
+        } else {
+            arr.push(i);
+        }
+    }
+    return arr;
+};
+

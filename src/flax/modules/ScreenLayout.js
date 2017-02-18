@@ -24,13 +24,10 @@ flax.getLayoutPosition = function(target, hLayout, vLayout)
     var rect = flax.getBounds(target, false);
     var screenRect = flax.visibleRect;
 
-    if(FRAMEWORK == "cocos" && screenRect.hArr == null) {
-        screenRect.hArr = [screenRect.left.x,   screenRect.center.x, screenRect.right.x];
-        screenRect.vArr = [screenRect.bottom.y, screenRect.center.y, screenRect.top.y];
-    }
-
-    var x = screenRect.hArr[hLayout];
-    var y = screenRect.vArr[vLayout];
+    var hArr = [screenRect.left.x, screenRect.center.x, screenRect.right.x];
+    var vArr = [screenRect.bottom.y, screenRect.center.y, screenRect.top.y];
+    var x = hArr[hLayout];
+    var y = vArr[vLayout];
 
     if(x == null || y == null) {
         throw "Invalid layout!"
@@ -45,16 +42,17 @@ flax.getLayoutPosition = function(target, hLayout, vLayout)
     pos.x -= cx;
     pos.y -= cy;
 
-    if(FRAMEWORK == "cocos") {
-        if(target.parent){
-            pos = target.parent.convertToNodeSpace(pos);
-        }
-    }
+    //if(target.parent){
+    //    if(flax.currentScene) {
+    //        pos = flax.currentScene.convertToWorldSpace(pos);
+    //        pos = target.parent.convertToNodeSpace(pos);
+    //    }
+    //}
 
     return pos;
 }
 
-flax.getLayoutPosition_old = function(target, hLayout, vLayout)
+flax.getLayoutPosition_cocos = function(target, hLayout, vLayout)
 {
     var rect = flax.getBounds(target, true);
     var sCenter = flax.visibleRect.center;
@@ -142,7 +140,8 @@ flax.Module.ScreenLayout = {
         this._isAutoLayout = false;
         this._hlayout = hLayout;
         this._vlayout = vLayout;
-        var pos = flax.getLayoutPosition(this, hLayout, vLayout);
+        //todo, 用一个模式，目前cocos下位置不对，如果注册点在flash的左上角，居中不对
+        var pos = FRAMEWORK == "cocos" ? flax.getLayoutPosition_cocos(this, hLayout, vLayout) : flax.getLayoutPosition(this, hLayout, vLayout);
         pos.x += this._offsetX;
         pos.y += this._offsetY;
         this.setPosition(pos);
@@ -212,7 +211,7 @@ flax.Module.ScreenLayout = {
             //}
         }
     },
-    _updateLayout:function(landscape)
+    _updateLayout:function(orientation)
     {
         if(this._isAutoLayout){
             this.autoLayout();

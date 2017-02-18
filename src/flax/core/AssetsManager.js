@@ -50,6 +50,7 @@ flax.AssetsManager = flax.Class.extend({
     fontsCache:null,
     imageCache:null,
     metaCache:null,
+    spriteFrames:null,
 
    ctor:function()
    {
@@ -59,8 +60,9 @@ flax.AssetsManager = flax.Class.extend({
        this.mcsCache = {};
        this.subAnimsCache = {};
        this.fontsCache = {};
-       this.imageCache = [];
+       this.imageCache = {};
        this.metaCache = {};
+       this.spriteFrames = {};
    },
    getAssetType:function(assetsFile, assetID)
    {
@@ -137,11 +139,8 @@ flax.AssetsManager = flax.Class.extend({
                     clsName = isMC ? flax._assetsMcClassMap[clsName] : flax._assetsClassMap[clsName];
                     //Handle the scale9Image
                     if(clsName == "flax.Image" && define['scale9']){
-                        if(flax.Scale9Image != null) {
-                            clsName = "flax.Scale9Image";
-                        } else {
-                            console.warn("Please add module of 'gui' or 'ccui'(cocos 3.10 later) into project.json if you want to use Scale9Image!");
-                        }
+                        clsName = "flax.Scale9Image";
+                        if(flax.Scale9Image == null) throw "Please add module of 'gui' or 'ccui'(cocos 3.10 later) into project.json if you want to use Scale9Image!";
                     }
                     mcCls = flax.nameToObject(clsName);
                 }
@@ -233,54 +232,86 @@ flax.AssetsManager = flax.Class.extend({
         obj.zIndex = target.zIndex;
         return obj;
     },
-    removeAssets:function(assetsFile)
+    removeAssets:function(assetsFile, onlyTexture)
     {
-        delete this.framesCache[assetsFile];
-        delete this.displaysCache[assetsFile];
-        delete this.displayDefineCache[assetsFile];
-        delete this.mcsCache[assetsFile];
-        delete this.subAnimsCache[assetsFile];
-        delete this.fontsCache[assetsFile];
-        delete this.metaCache[assetsFile];
-
-        var assetsFile1 = assetsFile;
         var ext = flax.path.extname(assetsFile);
-        if(ext == ".flax") assetsFile1 = flax.path.changeBasename(assetsFile1, DATA_FORMAT);
 
-        flax.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
-        flax.loader.release(assetsFile1);
-        flax.loader.release(flax.path.changeBasename(assetsFile1, ".png"));
+        //release the plist assets
+        if(ext == ".plist" || ext == ".json" || ext == ".flax") {
+            var assetsFile1 = assetsFile;
+            if(ext == ".flax") assetsFile1 = flax.path.changeBasename(assetsFile1, DATA_FORMAT);
+            if(onlyTexture !== true) {
+                delete this.framesCache[assetsFile];
+                delete this.displaysCache[assetsFile];
+                delete this.displayDefineCache[assetsFile];
+                delete this.mcsCache[assetsFile];
+                delete this.subAnimsCache[assetsFile];
+                delete this.fontsCache[assetsFile];
+                delete this.metaCache[assetsFile];
+                //flax.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
+                flax.loader.release(assetsFile1);
+            }
+            flax.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
+            delete this.spriteFrames[assetsFile]
+            this.removeSingleImgsCache(assetsFile1);
+        }
+
+        var pngFile = flax.path.changeBasename(assetsFile, ".png");
+        flax.loader.release(pngFile);
+        if(FRAMEWORK == "cocos") {
+            cc.textureCache.removeTextureForKey(pngFile);
+        } else {
+            //todo
+        }
     },
-    removeAllAssets:function()
+    removeAllAssets:function(onlyTexture)
     {
         for(var file in this.framesCache) {
-            this.removeAssets(file);
+            this.removeAssets(file, onlyTexture);
         }
-        //release all the image cache
-        for(var i = 0; i < this.imageCache.length; i++) {
-            flax.loader.release(this.imageCache[i]);
+        for(var plist in this.imageCache) {
+            this.removeSingleImgsCache(this.imageCache[plist]);
         }
-        this.imageCache.length = 0;
-        //todo,清除
-        //this.framesCache = {};
-        //this.displaysCache = {};
-        //this.displayDefineCache = {};
-        //this.mcsCache = {};
-        //this.subAnimsCache = {};
-        //this.fontsCache = {};
-        //this.imageCache = [];
-        //this.metaCache = {};
     },
-    addAssets:function(assetsFile)
+    removeSingleImgsCache:function(plist){
+        var imgCache = this.imageCache[plist];
+        if(!imgCache) return;
+        for(var i = 0; i < imgCache.length; i++) {
+            var img = imgCache[i];
+            flax.loader.release(img);
+            if(FRAMEWORK == "cocos") {
+                cc.textureCache.removeTextureForKey(img);
+            } else {
+                //todo
+            }
+        }
+        delete this.imageCache[plist];
+    },
+    addAssets:function(assetsFile, fullParse)
     {
-        if(typeof this.framesCache[assetsFile] !== "undefined") return false;
+        var dataParsed = this.framesCache[assetsFile];
+        var frameParsed = this.spriteFrames[assetsFile];
+
+        if(dataParsed && frameParsed) return false;
 
         var assetsFile1 = assetsFile;
         var ext = flax.path.extname(assetsFile);
         if(ext == ".flax") assetsFile1 = flax.path.changeBasename(assetsFile1, DATA_FORMAT);
-        var dict = flax.loader.getRes(assetsFile1);
-        if(dict == null){
-            throw "Make sure you have loaded the resource: " + assetsFile;
+
+        if(!dataParsed) {
+            var dict = flax.loader.getRes(assetsFile1);
+            if(dict == null){
+                throw "Make sure you have loaded the resource: " + assetsFile;
+            }
+        }
+
+        if(fullParse !== false && !frameParsed){
+            flax.spriteFrameCache.addSpriteFrames(assetsFile1);
+            this.spriteFrames[assetsFile] = true;
+        }
+
+        if(dataParsed) {
+            return false;
         }
 
         //If the assetsFile is not exported from flash
@@ -297,7 +328,7 @@ flax.AssetsManager = flax.Class.extend({
         //get the fps from flash
         var fps = dict["metadata"]["fps"];
 
-        flax.spriteFrameCache.addSpriteFrames(assetsFile1);
+        //flax.spriteFrameCache.addSpriteFrames(assetsFile1);
         //Note: the plist will be released by cocos when addSpriteFrames
         //We want it to be there to check the resource if loaded
         flax.loader.cache[assetsFile1] = "loaded!";
@@ -336,7 +367,7 @@ flax.AssetsManager = flax.Class.extend({
      * */
     _addFromOriginPlist:function(plistFile)
     {
-        if(typeof this.framesCache[plistFile] !== "undefined") return false;
+        if(this.framesCache[plistFile]) return false;
 
         var dict = flax.loader.getRes(plistFile);
         if(dict == null){
@@ -391,7 +422,8 @@ flax.AssetsManager = flax.Class.extend({
             if(dDefine['type'] == "png" || dDefine['type'] == "jpg") {
                 //parse the real path for the image
                 dDefine['url'] = resDir + "/" + dDefine['url'];
-                this.imageCache.push(dDefine['url']);
+                if(this.imageCache[assetsFile] == null) this.imageCache[assetsFile] = [];
+                this.imageCache[assetsFile].push(dDefine['url']);
                 //if(dDefine['scale9']) cc.log(dDefine['url'])
             }
         }

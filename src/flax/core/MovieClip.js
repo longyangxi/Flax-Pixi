@@ -46,8 +46,12 @@ flax.FrameData = flax.Class.extend({
             this.fontSize = parseInt(data[10] * flax.resolution);
             this.fontColor = data[11];
             //cocos color
-            if(FRAMEWORK == "cocos") this.fontColor = cc.hexToColor(this.fontColor);
-            this.textAlign = H_ALIGHS.indexOf(data[12]);
+            if(FRAMEWORK == "cocos") {
+                this.fontColor = cc.hexToColor(this.fontColor);
+                this.textAlign = H_ALIGHS.indexOf(data[12]);
+            } else {
+                this.textAlign = data[12];
+            }
             this.textWidth = parseFloat(data[13]) * flax.resolution;
             this.textHeight = parseFloat(data[14]) * flax.resolution;
         }
@@ -85,7 +89,6 @@ flax.FrameData = flax.Class.extend({
         {
             //cc.LabelTTF
             if(FRAMEWORK == "cocos") {
-                child.setFontName(this.font);
                 child.setFontFillColor(this.fontColor);
                 child.setHorizontalAlignment(this.textAlign);
                 child.setDimensions(this.textWidth, this.textHeight);
@@ -101,6 +104,7 @@ flax.FrameData = flax.Class.extend({
                     styleNow.fill = this.fontColor;
                     styleNow.align = this.textAlign;
                 }
+                styleNow.align = this.textAlign;
                 child.style = styleNow;
             }
         }
@@ -307,6 +311,7 @@ flax._movieClip = {
     onEnter:function()
     {
         this._super();
+        if(!this._gRect)  console.log(this.name, this.assetID, this._gRect);
         this.setContentSize(this._gRect.width, this._gRect.height);
     },
     //addChild: function (child, localZOrder, tag) {

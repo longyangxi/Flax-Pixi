@@ -116,7 +116,7 @@ flax.createLabel = function(assetsFile, data, define)
         var style = {
             font: data.fontSize + "px " + data.font * flax.resolution,
             fill: data.fontColor,
-            align: H_ALIGHS[data.textAlign],
+            align: data.textAlign,
             wordWrap: true,
             wordWrapWidth: data.textWidth
             //todo, data.textHeight isn't useful now

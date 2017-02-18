@@ -6,7 +6,7 @@
  * @license      MIT License: {@link http:http://mit-license.org/}
  */
 
-var loadJsonSync = function (url) {
+function loadJsonSync(url) {
     var http = new XMLHttpRequest();
     http.open("GET", url, false);
     if (/msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)) {
@@ -22,32 +22,47 @@ var loadJsonSync = function (url) {
     return JSON.parse(http.responseText);
 }
 
-var loadJsList = function (urls, isFlax) {
+function loadJsList(urls, dir) {
     for(var i = 0; i< urls.length; i++) {
         var script = document.createElement("script");
         script.async = false;
-        script.src = (isFlax ? flaxDir + "/" : "") + urls[i];
+        script.src = (dir || "") + urls[i];
         document.body.appendChild(script);
     }
 }
 
-var userConfig = loadJsonSync("project.json");
-FRAMEWORK = userConfig['frameWork'] || "pixi";
-var flaxDir = userConfig['flaxDir'] || "src/flax";
-var modules = userConfig['modules'];
+function doBoost() {
+    var userConfig = loadJsonSync("project.json");
+    if(userConfig['frameWork']) FRAMEWORK =  userConfig['frameWork'];
+    else FRAMEWORK = "pixi";
+    var flaxDir = userConfig['flaxDir'] || "src/flax";
+    var modules = userConfig['modules'];
 
-var moduleConfig = loadJsonSync(flaxDir + "/" + "moduleConfig.json");
+    var moduleConfig = loadJsonSync(flaxDir + "/" + "moduleConfig.json");
 
-for(var i = 0; i < modules.length; i++) {
-    var moduleName = modules[i];
-    var module = moduleConfig['modules'][moduleName];
-    if(module) {
-        if(module['base']) loadJsList(module['base'], true);
-        if(module[FRAMEWORK + "_base"]) loadJsList(module[FRAMEWORK + "_base"], true);
-        if(module['common']) loadJsList(module['common'], true);
-        if(module[FRAMEWORK]) loadJsList(module[FRAMEWORK], true);
+    for(var i = 0; i < modules.length; i++) {
+        var moduleName = modules[i];
+        var module = moduleConfig['modules'][moduleName];
+        if(module) {
+            var dir = flaxDir + "/";
+            if(module['base']) loadJsList(module['base'], dir);
+            if(module[FRAMEWORK + "_base"]) loadJsList(module[FRAMEWORK + "_base"], dir);
+            if(module['common']) loadJsList(module['common'], dir);
+            if(module[FRAMEWORK]) loadJsList(module[FRAMEWORK], dir);
+        }
     }
+
+    loadJsList(userConfig['jsList']);
+    loadJsList(['main.js']);
 }
 
-loadJsList(userConfig['jsList']);
-loadJsList(['main.js']);
+/**
+ * 为了让cordova可以启动游戏，需要安装httpd的插件，在游戏运行时启动
+ * 参见：https://github.com/floatinghotpot/cordova-httpd
+ * */
+if(typeof cordova == "undefined") {
+    doBoost();
+} else {
+    loadJsList(["src/flax/httpd.js"]);
+    document.addEventListener("httpdready", doBoost, false);
+}

@@ -33,7 +33,6 @@ flax.view = {
     _resolutionPolicy: flax.ResolutionPolicy.SHOW_ALL,
     setDesignResolutionSize: function(width, height, policy)
     {
-
         this._width = width;
         this._height = height;
         //flax.visibleRect.init(flax.rect(0, 0, width, height));
@@ -71,8 +70,6 @@ flax.visibleRect = {
     right:flax.p(0,0),
     width:0,
     height:0,
-    hArr:null,
-    vArr:null,
 
     /**
      * initialize
@@ -123,8 +120,5 @@ flax.visibleRect = {
         //right
         this.right.x = r;
         this.right.y = cy;
-
-        this.hArr = [l, this.center.x, r];
-        this.vArr = [b, this.center.y, t];
     }
 };

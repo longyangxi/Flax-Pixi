@@ -2,6 +2,11 @@
  * Created by long on 14-2-3.
  */
 
+/**
+ * Global fontName for all labels
+ * */
+flax.globalFontName = null;
+
 var _p = cc.LabelTTF.prototype;
 /** @expose */
 _p.text;
@@ -48,16 +53,22 @@ flax.createLabel = function(assetsFile, data, define)
     }
     //If it is ttf label(has font and the bitmap font is null, other wise use bitmap label
     else if(data.font && bmpFontName == null){
+
+        var fontName = flax.globalFontName || data.font;
+
+        //In native, the fontName should be the path of the fontName: res/fontName.ttf
+        //And in xcode, add a "Fonts provided by application" key to the info.plist, a value is res/fontName.ttf
+        if(flax.sys.isNative && flax._fontResources && flax._fontResources[fontName]) {
+            fontName = flax._fontResources[fontName][0];
+        }
+
         if(txtCls == "null" || !flax.language) {
-            lbl = new cc.LabelTTF(define.text);
+            lbl = new cc.LabelTTF(define.text, fontName, data.fontSize);
         }else{
-            lbl = new cc.LabelTTF(flax.language.getStr(txtCls) || define.text);
+            lbl = new cc.LabelTTF(flax.language.getStr(txtCls) || define.text, fontName, data.fontSize);
         }
 
         lbl.setAnchorPoint(0, 1);
-
-        lbl.setFontName(data.font);
-        lbl.setFontSize(data.fontSize);
         lbl.setHorizontalAlignment(data.textAlign);
         lbl.setVerticalAlignment(cc.VERTICAL_TEXT_ALIGNMENT_CENTER);
         lbl.setFontFillColor(data.fontColor);
@@ -68,7 +79,7 @@ flax.createLabel = function(assetsFile, data, define)
         //lbl.enableStroke(cc.color(255, 0, 0, 255), 5);
         //enable shadow
         //lbl.enableShadow(cc.color(255,255,255,255),2,5);
-    //bitmap font text
+        //bitmap font text
     }else{
         lbl = new flax.BitmapLabel();
         flax.assetsManager.addAssets(assetsFile);

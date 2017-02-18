@@ -199,7 +199,7 @@ flax.ifTouched = function(target, pos)
     if(!(flax.isDisplay(target))) return false;
 
     //if its flax.FlaxSprite
-    if(target.mainCollider){
+    if(target.mainCollider && target.mainCollider.containsPoint){
         return target.mainCollider.containsPoint(pos);
     }
     var r = flax.getBounds(target,true);

@@ -6,15 +6,23 @@ var flax = flax || {};
 
 flax.device = {
     osVersion:"unknown",
-    landscape:false,
+    landscape:null,
     onRotate:null,
     _imgTip:null,
     _oldGamePauseState:false,
+    _configedOrientation:null,
     init:function(){
         this.onRotate = new signals.Signal();
         if(flax.sys.isNative) return;
         this._checkOSVersion();
         flax.bgColor = this._getBackgroundColor();
+        var orientationConfiged = flax.game.config['orientation'];
+        if(!orientationConfiged && flax.game.config['currentOrientation'] != undefined) {
+            orientationConfiged = flax.game.config['currentOrientation'] ? "currentOrientation" : "portrait";
+        }
+        if(!orientationConfiged) orientationConfiged = "all";
+        flax.device._configedOrientation = orientationConfiged;
+
         if(!this._imgTip && flax.sys.isMobile){
             if(flax.game.config["rotateImg"]){
                 var w = flax.stageRect.width + 10;
@@ -44,7 +52,7 @@ flax.device = {
         }
     },
     isCorrectDirection: function () {
-        return flax.game.config["landscape"] == this.landscape;
+        return flax.device._configedOrientation == this.currentOrientation;
     },
     showTipTop: function () {
         if(this._imgTip && this._imgTip.parent) {
@@ -56,9 +64,9 @@ flax.device = {
         var self = flax.device;
         //Math.abs(window.orientation) = 90 || 0
         var newLandscape = (Math.abs(window.orientation) == 90);
-        var landscapeConfiged = flax.game.config["landscape"];
+        var orientationName = newLandscape ? "landscape" : "portrait";
         if(self._imgTip){
-            var notLandscapeAsSet = (landscapeConfiged != newLandscape);
+            var notLandscapeAsSet = (flax.device._configedOrientation != "all") && (flax.device._configedOrientation != orientationName);
             self._imgTip.visible = notLandscapeAsSet;
             if(FRAMEWORK == "cocos")
                 self._imgTip.__icon.rotation = (newLandscape ? -90 : 0);
@@ -71,18 +79,18 @@ flax.device = {
             }
             if(flax.inputManager) flax.inputManager.enabled = !self._imgTip.visible;
         }
-        self.landscape = newLandscape;
+        self.currentOrientation = orientationName;
 
         self.showTipTop();
 
-        //if(landscapeConfiged == newLandscape){
-        //    flax.view.setDesignResolutionSize(flax.designedStageSize.width, flax.designedStageSize.height, flax.view.getResolutionPolicy());
-        //}else{
-        //    flax.view.setDesignResolutionSize(flax.designedStageSize.height, flax.designedStageSize.width, flax.view.getResolutionPolicy());
-        //}
-        //flax.stageRect = flax.rect(flax.visibleRect.bottomLeft.x, flax.visibleRect.bottomLeft.y, flax.visibleRect.width, flax.visibleRect.height);
+        if(flax.device._configedOrientation == "portrait"){
+            flax.view.setDesignResolutionSize(flax.designedStageSize.width, flax.designedStageSize.height, flax.view.getResolutionPolicy());
+        }else{
+            flax.view.setDesignResolutionSize(flax.designedStageSize.height, flax.designedStageSize.width, flax.view.getResolutionPolicy());
+        }
+        flax.stageRect = flax.rect(flax.visibleRect.bottomLeft.x, flax.visibleRect.bottomLeft.y, flax.visibleRect.width, flax.visibleRect.height);
 
-        self.onRotate.dispatch(newLandscape);
+        self.onRotate.dispatch(orientationName);
     },
     _checkOSVersion:function(){
         if(flax.sys.isNative) return;

@@ -352,13 +352,19 @@ flax.Module.Collider = {
     },
     mainCollider:{
         get: function () {
-            if(this._mainCollider) {
+            var c = this._mainCollider;
+            if(c) {
                 //fix the zero size bug
-                if((this._mainCollider._width == 0 && this.width > 0) || (this._mainCollider._height == 0 && this.height > 0)) {
+                if((c._width == 0 && this.width > 0) || (c._height == 0 && this.height > 0)) {
                     this._initMainCollider();
                 }
+            } else {
+                console.log("***The collider is null, todo!")
+                c = new flax.Collider("Rect," + 0 + "," + 0 + "," + 0 + "," + 0 + ",0");
+                c.name = "main";
+                c.setOwner(this);
             }
-            return this._mainCollider || flax.ZERO_RECT;
+            return c;
         }
     },
     center:{

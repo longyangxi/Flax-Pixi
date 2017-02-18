@@ -19,6 +19,7 @@ flax.ButtonGroup = flax.Class.extend({
         for(var i = 0; i < buttons.length; i++){
 
             var btn = buttons[i];
+            if(!btn) throw "The button must be not null!";
             if(!flax.isButton(btn)) {
                 throw "The element added to a ButtonGroup must be a flax button!"
                 continue;

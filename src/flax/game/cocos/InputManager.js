@@ -23,7 +23,10 @@ var InputType = {
 var MULTI_TOUCH_TYPES = ["onZoomIn", "onZoomOut"];
 
 flax.InputManager = cc.Node.extend({
-    swallowTouches:false,
+    /**
+     * If has multi-touch listener, this must be false, but single-touch will has some bug, so todo
+     * */
+    swallowTouches:true,
     /**
      * Global switch for touch
      * */
@@ -137,6 +140,7 @@ flax.InputManager = cc.Node.extend({
         this._keyboardListener = null;
         this._touchListeners = null;
         this.soleTarget = null;
+        if(flax.inputManager == this) flax.inputManager = null;
     },
     /**
      * Add a Sprite node which will permitted the lower sprite to get touch event callback
