@@ -21,7 +21,7 @@ flax.FrameData = flax.Class.extend({
     textAlign:"",
     textWidth:40,
     textHeight:20,
-
+    lineHeight: 0,
     _isText:false,
     _data:null,
     _hasSkew:false,
@@ -38,42 +38,36 @@ flax.FrameData = flax.Class.extend({
         if(data.length > 6) this.zIndex = parseInt(data[6]);
         if(data.length > 7) this.skewX = parseFloat(data[7]);
         if(data.length > 8) this.skewY = parseFloat(data[8]);
+
+        //pixi对matrix的解析见pixi源码中：Matrix.prototype.decompose
+        //对于matrix的定义，flash和pixi是一致的
         this._hasSkew = (data.length > 7 && (this.skewX != 0 || this.skewY != 0));
+
         //the ttf text info
         if(data.length > 9) {
             this._isText = true;
             this.font = data[9];
             this.fontSize = parseInt(data[10] * flax.resolution);
             this.fontColor = data[11];
-            //cocos color
-            if(FRAMEWORK == "cocos") {
-                this.fontColor = cc.hexToColor(this.fontColor);
-                this.textAlign = H_ALIGHS.indexOf(data[12]);
-            } else {
-                this.textAlign = data[12];
-            }
+            this.textAlign = data[12];
             this.textWidth = parseFloat(data[13]) * flax.resolution;
             this.textHeight = parseFloat(data[14]) * flax.resolution;
+            this.lineHeight = parseFloat(data[15]) * flax.resolution;
         }
     },
     setForChild:function(child)
     {
         child.setScaleX(this.scaleX);
         child.setScaleY(this.scaleY);
+
         //handle the skew
         if(this._hasSkew){
-            //skew in cocos
-            if(FRAMEWORK == "cocos"){
-                child.setRotationX(this.skewX);
-                child.setRotationY(this.skewY);
-            //skew in pixi
-            }else if(FRAMEWORK == "pixi"){
-                if(child.skew){
-                    child.skew.x = this.skewX*DEGREE_TO_RADIAN;
-                    child.skew.y = this.skewY*DEGREE_TO_RADIAN;
-                }else{
-                    flax.log("***Warning: this version of pixi has not implemented the skew!")
-                }
+            //skew
+            if(child.skew){
+                child.skew.x = this.skewX;
+                child.skew.y = this.skewY;
+            }else{
+                console.log("***Warning: this version of pixi has not implemented the skew!")
             }
         } else {
             child.setRotation(this.rotation);
@@ -87,26 +81,12 @@ flax.FrameData = flax.Class.extend({
         //set the ttf text properties
         if(this.font && child.__isTTF === true)
         {
-            //cc.LabelTTF
-            if(FRAMEWORK == "cocos") {
-                child.setFontFillColor(this.fontColor);
-                child.setHorizontalAlignment(this.textAlign);
-                child.setDimensions(this.textWidth, this.textHeight);
-                //todo: fix the bug of cocos: no update when the font color changed
-                child.setFontSize(this.fontSize - 1);
-                child.setFontSize(this.fontSize);
-            //PIXI.Text
-            } else {
-                var styleNow = child.style;
-                var fs = this.fontSize + "px " + this.font;
-                if(styleNow.font != fs || styleNow.fill != this.fontColor || styleNow.align == this.textAlign) {
-                    styleNow.font = fs;
-                    styleNow.fill = this.fontColor;
-                    styleNow.align = this.textAlign;
-                }
-                styleNow.align = this.textAlign;
-                child.style = styleNow;
-            }
+            var styleNow = child.style;
+
+            styleNow.fontFamily = this.font;
+            styleNow.fontSize = this.fontSize * flax.resolution;
+            styleNow.fill = this.fontColor;
+            styleNow.align = this.textAlign;
         }
         child.setPositionX(x);
         child.setPositionY(y);
@@ -138,10 +118,10 @@ flax._movieClip = {
      * */
     replaceChild:function(childName, assetID, assetsFile)
     {
-        if(!this.running) return false;
+        if(this._destroyed) return false;
         var childDefine = this._childrenDefine[childName];
         if(childDefine == null){
-            flax.log("There is no child with named: "+childName +"  in MovieClip: "+this.assetID);
+            console.log("There is no child with named: "+childName +"  in MovieClip: "+this.assetID);
             return false;
         }
         var child = this.namedChildren[childName];
@@ -153,7 +133,7 @@ flax._movieClip = {
             if(!isDisplay) {
                 var assetType = flax.assetsManager.getAssetType(assetsFile, assetID);
                 if(!assetType){
-                    //flax.log("***There is no display with assetID: " + assetID + " in assets: " + assetsFile);
+                    //console.log("***There is no display with assetID: " + assetID + " in assets: " + assetsFile);
                     return false;
                 }
             }
@@ -195,27 +175,18 @@ flax._movieClip = {
                 }
             }
         }
-        flax.log("This MovieClip maybe is not initialized yet!")
+        console.log("This MovieClip maybe is not initialized yet!")
         return null;
     },
     setOpacity: function (opacity) {
         //todo
-        if(FRAMEWORK == "cocos") {
-            cc.Node.prototype.setOpacity.call(this, opacity);
-            for(var k in this.namedChildren){
-                var child = this.namedChildren[k];
-                if(child.setOpacity) child.setOpacity(opacity);
-            }
-        }
     },
-    setColor: function (color) {
-        //todo
-        if(FRAMEWORK == "cocos") {
-            cc.Node.prototype.setColor.call(this, color);
-            for(var k in this.namedChildren){
-                var child = this.namedChildren[k];
-                if(child.setColor) child.setColor(color);
-            }
+    setColor: function(color) {
+        color = this._super(color);
+        for(var k in this.children) {
+            var child = this.children[k];
+            if(child.setColor) child.setColor(color);
+            else this.children[k].tint = color;
         }
     },
     /**
@@ -230,13 +201,13 @@ flax._movieClip = {
 //        if(typeof nameOrInstance === "string") {
 //            child = this.namedChildren[nameOrInstance];
 //            if(child == null){
-//                flax.log("***Warning--There is no child with name: " + nameOrInstance);
+//                console.log("***Warning--There is no child with name: " + nameOrInstance);
 //                return;
 //            }
 //        }else if(nameOrInstance.__isFlaxSprite === true) {
 //            child = nameOrInstance;
 //            if(child.parent != this){
-//                flax.log("***Warning--The target is not a child of this!");
+//                console.log("***Warning--The target is not a child of this!");
 //                return;
 //            }
 //        }else throw 'Invalid child name of instance!'
@@ -297,6 +268,7 @@ flax._movieClip = {
                     delete this._childrenDefine[childName].frames;
                     framesDict[childName] = framesData;
                 }
+
                 //Make the frames ordered by zIndex to create these children in no cocos framework
                 var frameData = framesData[frame];
                 if(frameData == null) {
@@ -311,7 +283,6 @@ flax._movieClip = {
     onEnter:function()
     {
         this._super();
-        if(!this._gRect)  console.log(this.name, this.assetID, this._gRect);
         this.setContentSize(this._gRect.width, this._gRect.height);
     },
     //addChild: function (child, localZOrder, tag) {
@@ -366,7 +337,7 @@ flax._movieClip = {
                         child = flax.createLabel(this.assetsFile, frameData, childDefine);
                         child.name = childName;
                     }else{
-                        child = flax.assetsManager.createDisplay(childDefine.assetsFile || this.assetsFile, childDefine["class"], {name: childName}, this.createChildFromPool);
+                        child = flax.assetsManager.createDisplay(childDefine.assetsFile || this.assetsFile, childDefine["class"], {name: childName, _isLanguageElement: childDefine._isLanguageElement}, this.createChildFromPool);
                     }
 
                     this.namedChildren[childName] = child;
@@ -380,18 +351,19 @@ flax._movieClip = {
                 //To fix the zIndex bug when use the old version tool
                 var zIndex = (frameData.zIndex == -1) ? childDefine['zIndex'] : frameData.zIndex;
 
-                if(child.mask && FRAMEWORK == "cocos") {
-                    if(child.mask.parent != this){
-                        child.mask.removeFromParent(false);
-                        this.addChild(child.mask, zIndex);
-                    }else if(child.mask.zIndex != zIndex) {
-                        child.mask.zIndex = zIndex;
-                    }
-                } else {
+                //if(child.mask && FRAMEWORK == "cocos")
+                //{
+                //    if(child.mask.parent != this){
+                //        child.mask.removeFromParent(false);
+                //        this.addChild(child.mask, zIndex);
+                //    }else if(child.mask.zIndex != zIndex) {
+                //        child.mask.zIndex = zIndex;
+                //    }
+                //} else
+                {
                     if(child.parent != this){
                         child.removeFromParent(false);
-                        if(FRAMEWORK == "cocos") this.addChild(child, zIndex);
-                        else this.addChildAt(child, zIndex);
+                        this.addChildAt(child, zIndex)
                     }else if(child.zIndex != zIndex) {
                         child.zIndex = zIndex;
                     }
@@ -585,8 +557,8 @@ flax._movieClip = {
         this._gRect = null;
         this._extraChildren = null;
         //In cocos, remove all children
-        if(this.autoRecycle && FRAMEWORK == "cocos")
-            this.removeAllChildren(true);
+        //if(this.autoRecycle && FRAMEWORK == "cocos")
+        //    this.removeAllChildren(true);
     },
     /**
      * Override pixi's getBounds
@@ -612,23 +584,3 @@ flax.defineGetterSetter(_p, "autoPlayChildren", _p.getAutoPlayChildren, _p.setAu
 flax.defineGetterSetter(_p, "opacity", _p.getOpacity, _p.setOpacity);
 
 window['flax']['MovieClip'] = flax.MovieClip;
-
-///////////////////////////////////////////////////////////////////////////////////////////////
-
-if(FRAMEWORK == "cocos"){
-    flax.MovieClipBatch = flax.FlaxSpriteBatch.extend(flax._movieClip);
-    flax.MovieClipBatch.create = function(assetsFile, assetID)
-    {
-        var mc = new flax.MovieClipBatch(assetsFile, assetID);
-        mc.clsName = "flax.MovieClipBatch";
-        return mc;
-    };
-
-    _p = flax.MovieClipBatch.prototype;
-    /** @expose */
-    _p.autoPlayChildren;
-    flax.defineGetterSetter(_p, "autoPlayChildren", _p.getAutoPlayChildren, _p.setAutoPlayChildren);
-    flax.defineGetterSetter(_p, "opacity", _p.getOpacity, _p.setOpacity);
-
-    window['flax']['MovieClipBatch'] = flax.MovieClipBatch;
-}

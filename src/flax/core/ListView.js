@@ -83,11 +83,11 @@ flax.ListView = flax.MovieClip.extend({
         var w = this._yDirection ? this.width : this._totalSize;
         var h = this._yDirection ? this._totalSize : this.height;
 
-        if(FRAMEWORK == "cocos") {
-            var s = flax.getScale(this, true);
-            w *= Math.abs(s.x);
-            h *= Math.abs(s.y);
-        }
+        //if(FRAMEWORK == "cocos") {
+        //    var s = flax.getScale(this, true);
+        //    w *= Math.abs(s.x);
+        //    h *= Math.abs(s.y);
+        //}
 
         var pos = this.getPosition();
         if(this.parent){
@@ -103,7 +103,7 @@ flax.ListView = flax.MovieClip.extend({
     },
     addItem: function (itemView) {
         var gap = this.gap;
-        var lastPos = (FRAMEWORK == "cocos" && this._yDirection) ? this._originSize : 0;
+        var lastPos = 0;//(FRAMEWORK == "cocos" && this._yDirection) ? this._originSize : 0;
         var lastSize = 0;
         var lastItem = this.viewArray[this.viewArray.length - 1];
         if(lastItem) {

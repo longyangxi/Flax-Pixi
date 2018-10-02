@@ -37,7 +37,7 @@ flax._gunnerDefine = {
         if(this.parent == null) return;
         if(!gunAnchors) gunAnchors = param.gunAnchors;
         if(gunAnchors == null){
-            flax.log("Please set the gunAnchors param!");
+            console.log("Please set the gunAnchors param!");
             return;
         }
         var i = -1;

@@ -9,7 +9,7 @@ flax._scrollPaneDefine = {
         //todo, maybe true
         this._viewRect = this.getCollider("view").getBounds(true);
         if(!this._viewRect) {
-            flax.log("If you want me scrollable, please set collider__view for me!");
+            console.log("If you want me scrollable, please set collider__view for me!");
             return;
         }
         flax.inputManager.addListener(null, this._startDrag, InputType.press, this);

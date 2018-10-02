@@ -6,16 +6,8 @@ flax.ZERO_RECT = {x: 0, y: 0, width: 0, height: 0};
 
 flax.rect = function(x, y, w, h)
 {
-    if(FRAMEWORK == "pixi"){
-        if(x && x.x != undefined) return new PIXI.Rectangle(x.x, x.y, x.width, x.height);
-        return new PIXI.Rectangle(x, y, w, h);
-    }else{
-        if (x === undefined)
-            return {x: 0, y: 0, width: 0, height: 0};
-        if (y === undefined)
-            return {x: x.x, y: x.y, width: x.width, height: x.height};
-        return {x: x, y: y, width: w, height: h };
-    }
+    if(x && x.x != undefined) return new PIXI.Rectangle(x.x, x.y, x.width, x.height);
+    return new PIXI.Rectangle(x, y, w, h);
 }
 
 /**

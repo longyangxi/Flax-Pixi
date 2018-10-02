@@ -145,7 +145,7 @@ flax.BulletCanvas = flax.SpriteBatchNode.extend({
     },
     addBullet:function(rotation, position, param, owner){
         if(this.parent == null) {
-            flax.log("Please create a bullet canvas: flax.BulletCanvas.create('"+this.assetsFile+"', container, zIndex);");
+            console.log("Please create a bullet canvas: flax.BulletCanvas.create('"+this.assetsFile+"', container, zIndex);");
             return;
         }
         if(!(param instanceof flax.GunParam)) param = flax.GunParam.create(param);
@@ -340,7 +340,7 @@ flax.BulletCanvas.release = function(){
 flax.Gun.create = function(param)
 {
     if(param == null) {
-        flax.log("Please give me a param defiled like: flax.GunParam!");
+        console.log("Please give me a param defiled like: flax.GunParam!");
         return null;
     }
     param = flax.GunParam.create(param);

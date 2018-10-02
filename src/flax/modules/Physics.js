@@ -29,7 +29,7 @@ flax.Module.PhysicsShape = {
         var shape =null;
         if(this.type == flax.ColliderType.circle){
             shape = new Box2D.Collision.Shapes.b2CircleShape();
-            var s = FRAMEWORK == "cocos" ? flax.getScale(this.owner, true).x : 1.0;
+            var s = 1.0;
             shape.SetRadius(0.5*size.width*s/PTM_RATIO);
             var offsetToAnchor = flax.pSub(centerPos, bodyPos);
             shape.SetLocalPosition(flax.pMult(offsetToAnchor, 1/PTM_RATIO));
@@ -165,7 +165,7 @@ flax.Module.Physics = {
         if(this._physicsBody == null) throw "Please createPhysics firstly!";
         var collider = this.getCollider(name);
         if(collider == null) {
-            flax.log("There is no collider named: "+name);
+            console.log("There is no collider named: "+name);
             return null;
         }else if(collider.physicsFixture){
             return collider.physicsFixture;
@@ -366,7 +366,7 @@ flax._createPhysicsListener = function(){
 //        contact.GetWorldManifold(mainfold);
 //        var contactPoint = flax.pMult(mainfold.m_points[0], PTM_RATIO);
 //        flax.drawRect(cc.rect(contactPoint.x - 2, contactPoint.y - 2, 4, 4));
-//        flax.log(mainfold.m_points.length);
+//        console.log(mainfold.m_points.length);
 
         flax.onCollideStart.dispatch(ca, cb);
         ca.physicsContact = cb.physicsContact = null;

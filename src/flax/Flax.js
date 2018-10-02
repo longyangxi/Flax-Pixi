@@ -37,60 +37,21 @@ if(window.navigator) {
     flax.isMobile = true;
 }
 
-flax.loadJsonSync = function (url) {
-    var http = new XMLHttpRequest();
-    http.open("GET", url, false);
-    if (/msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)) {
-        // IE-specific logic here
-        http.setRequestHeader("Accept-Charset", "utf-8");
-    } else {
-        if (http.overrideMimeType) http.overrideMimeType("text\/plain; charset=utf-8");
-    }
-    http.send(null);
-    if (!http.readyState === 4 || http.status !== 200) {
-        return null;
-    }
-    return JSON.parse(http.responseText);
-}
-
-if(FRAMEWORK == "cocos"){
-    flax.Sprite = cc.Sprite;
-    flax.SpriteBatchNode = cc.SpriteBatchNode;
-    flax.Scale9Sprite = cc.Scale9Sprite;
-    flax.game = cc.game;
-    if(!cc.sys.isNative) flax.game.config = flax.loadJsonSync("project.json");
-    flax.Scene = cc.Scene;
-    flax.sys = cc.sys;
-    flax.ResolutionPolicy = cc.ResolutionPolicy;
-}else{
-    flax.log = function () {
-        //todo
-        console.log(arguments)
-    }
-    //todo
-    //flax.Scale9Sprite = cc.Scale9Sprite;
-}
-
 /**
  * Setup flax as a plugin to play animation only
  * @param {flax.stage} stage the global container to be rendered in game, only need by pixi
  * */
 flax.plugin = function (stage) {
     //In pixi, we need a root stage
-    if(FRAMEWORK == "pixi"){
-        if(stage == null) throw "Please give me stage!"
-        flax.stage = stage;
-    }
+    if(stage == null) throw "Please give me stage!"
+    flax.stage = stage;
     //setup all the modules
     flax._setupModules();
 
-    //In no cocos frameworks, we should setup a shcheduler
-    if(FRAMEWORK != "cocos"){
-        flax.scheduler = new flax.Scheduler();
-        flax.scheduler.start();
-    }
+    flax.scheduler = new flax.Scheduler();
+    flax.scheduler.start();
 
-    flax.log("Flax initialized as an plugin, version: " + VERSION);
+    console.log("Flax initialized as an plugin, version: " + VERSION);
 }
 
 /**
@@ -113,55 +74,32 @@ flax.plugin = function (stage) {
  * */
 flax.init = function(resolutionPolicy, initialUserData, options)
 {
+    //remove the css preloader
+    if(typeof document != "undefined" && document.getElementById && document.getElementById("flaxLoading"))
+        document.body.removeChild(document.getElementById("flaxLoading"));
+
     if(flax.game) flax.frameInterval = 1/flax.game.config["frameRate"];
     if(flax.language) flax.language.init();
-
-    var orientation = flax.game.config['orientation'];
-
-    if(orientation) {
-        if(orientation == "portrait" || orientation == "landscape") {
-            //use the cordova orientation plugin: https://github.com/apache/cordova-plugin-screen-orientation
-            if(window.screen && window.screen.lockOrientation) {
-                window.screen.lockOrientation(orientation);
-            }
-        }
-    }
 
     flax._rendererOptions = options;
 
     flax._setupModules();
 
-    if(flax.userData) flax.fetchUserData(initialUserData);
+    if(flax.fetchUserData) flax.fetchUserData(initialUserData);
 
     if(!options || options.enableRetina !== false) flax.view.enableRetina(true);
 
-    flax._setupView(resolutionPolicy, options && options.width, options && options.height);
+    flax._setupView(resolutionPolicy, options);
 
     flax._addEvents();
 
-    flax.log("Flax initialized as an engine, version: " + VERSION);
+    if(flax.preloadSounds) flax.preloadSounds();
+
+    console.log("Flax initialized as an engine, version: " + VERSION);
 };
 
 flax._setupModules = function()
 {
-    if(FRAMEWORK == "cocos") {
-        flax.view = cc.view;
-        flax.visibleRect = cc.visibleRect;
-        flax.log = cc.log;
-        flax.loader = cc.loader;
-        flax.path = cc.path;
-        flax.spriteFrameCache = cc.spriteFrameCache;
-        flax.defineGetterSetter = cc.defineGetterSetter;
-        flax.director = cc.director;
-        //Fix the scheduleOnce bug in cocos
-        //if(flax.Module.ScheduleOnce) flax.addModule(flax.Sprite, flax.Module.ScheduleOnce, true);
-        //if(flax.Module.ScheduleOnce) flax.addModule(flax.FlaxSprite, flax.Module.ScheduleOnce, true);
-        //if(flax.Module.ScheduleOnce) flax.addModule(flax.FlaxContainer, flax.Module.ScheduleOnce, true);
-
-    }else{
-
-    }
-
     if(flax.Module.PhysicsShape) flax.addModule(flax.Collider, flax.Module.PhysicsShape);
 
     if(flax.Module.TileMap) flax.addModule(flax.FlaxSprite, flax.Module.TileMap);
@@ -191,15 +129,46 @@ flax._setupModules = function()
     }
 }
 
-flax._setupView = function (resolutionPolicy, designWidth, designHeight) {
+flax._setupView = function (resolutionPolicy, options) {
 
-    if(resolutionPolicy == null) resolutionPolicy = flax.sys.isMobile ? flax.ResolutionPolicy.NO_BORDER : flax.ResolutionPolicy.SHOW_ALL;
+    flax.setViewPortMeta();
+
+    var gameConfig = flax.game.config;
+    var platform = gameConfig.platform;
+    //TODO, use fixed-width in fb instant game
+    if(platform == "fb") {
+        resolutionPolicy = flax.ResolutionPolicy.FIXED_WIDTH;
+    }
+
+    if(resolutionPolicy == null) {
+        resolutionPolicy = flax.ResolutionPolicy.SHOW_ALL;
+        if(flax.isMobile) {
+            resolutionPolicy = !gameConfig.landscape ? flax.ResolutionPolicy.FIXED_WIDTH : flax.ResolutionPolicy.FIXED_HEIGHT;
+        }
+    }
 
     flax.resolutionPolicy = resolutionPolicy;
 
+    var designWidth = options && options.width;
+    var designHeight = options && options.height;
+
     var width = designWidth ? designWidth : flax.game.config["width"];
     var height = designHeight ? designHeight: flax.game.config["height"];
+
+    //TODO, 需要进一步验证，这里将手机全屏设为渲染尺寸
+    //TODO, FB上有点问题
+    if(flax.sys.isMobile || platform == "fb")
+    {
+        var screenSize = flax.getRealScreenSize();
+        var s = flax.getGameScale(flax.rect(0, 0, width, height));
+        width = screenSize.x / s.x;
+        height = screenSize.y / s.y;
+    }
+
     if(!width || !height) throw "Please set the game width and height in the project.json!"
+
+    flax.designedStageSize = flax.rect(0, 0, width, height);
+
     if(!flax.sys.isNative){
         var stg = document.getElementById(flax.game.config["id"]);
         if(stg){
@@ -213,13 +182,13 @@ flax._setupView = function (resolutionPolicy, designWidth, designHeight) {
         flax.stageRect = flax.rect(0, 0, width, height);
     }
 
-    flax.designedStageSize = flax.rect(0, 0, width, height);
+    //flax.designedStageSize = flax.rect(0, 0, width, height);
 
     flax.view.setDesignResolutionSize(width, height, resolutionPolicy);
 
-    if(!flax.sys.isNative) {
+    if(!flax.sys.isNative)
+    {
         window.addEventListener("resize", function(){
-            //flax.stageRect = flax.rect(flax.visibleRect.bottomLeft.x, flax.visibleRect.bottomLeft.y, flax.visibleRect.width, flax.visibleRect.height);
             flax.stageRect = flax.rect(0, 0, width, height);
             if(flax.view.updateView) flax.view.updateView();
             flax.onScreenResize.dispatch();
@@ -228,14 +197,32 @@ flax._setupView = function (resolutionPolicy, designWidth, designHeight) {
 }
 
 flax._addEvents = function () {
-    if(FRAMEWORK == "cocos"){
-        cc.eventManager.addCustomListener(cc.game.EVENT_HIDE, function () {
+    //var lastHidenTime = 0;
+    //var lastShowTime = 0;
+    var onHidden = function() {
+        //var now = Date.now();
+        //if(now - lastHidenTime > 16.667) {
             flax.onScreenHide.dispatch();
-        });
-        cc.eventManager.addCustomListener(cc.game.EVENT_SHOW, function () {
+            //lastHidenTime = now;
+        //}
+    };
+    var onShow = function() {
+        //var now = Date.now();
+        //if(now - lastShowTime > 16.667) {
             flax.onScreenShow.dispatch();
-        });
-    }else{
+            //lastShowTime = now;
+        //}
+    };
+
+    var plat = flax.game.config.platform;
+
+    if(plat == "fb") {
+        //FB has only pause event
+        FBInstant.onPause(onHidden);
+    //} else if(typeof cordova != "undefined") {
+    //    document.addEventListener('pause', onHidden, false)
+    //    document.addEventListener('resume', onShow, false)
+    } else {
         var win = window, hidden, visibilityChange, _undef = "undefined";
         if (typeof document.hidden != _undef) {
             hidden = "hidden";
@@ -251,19 +238,18 @@ flax._addEvents = function () {
             visibilityChange = "webkitvisibilitychange";
         }
 
-        var onHidden = function () {
-            flax.onScreenHide.dispatch();
-        };
-        var onShow = function () {
-            flax.onScreenShow.dispatch();
-        };
-
         if (hidden) {
             win.addEventListener(visibilityChange, function () {
                 if (document[hidden]) onHidden();
                 else onShow();
             }, false);
         } else {
+            win.addEventListener("blur", onHidden, false);
+            win.addEventListener("focus", onShow, false);
+        }
+
+        //fix the safari in Mac
+        if(!flax.sys.isMobile && flax.sys.browserType == flax.sys.BROWSER_TYPE_SAFARI) {
             win.addEventListener("blur", onHidden, false);
             win.addEventListener("focus", onShow, false);
         }
@@ -276,5 +262,77 @@ flax._addEvents = function () {
             win.addEventListener("pagehide", onHidden, false);
             win.addEventListener("pageshow", onShow, false);
         }
+        win = null;
+        visibilityChange = null;
     }
 }
+
+function catchAllErrors() {
+    window.onerror = function(msg, url, lineNo, columnNo, error) {
+
+        var idx = url.lastIndexOf("/");
+        console.log("**************JAVASCRIPT ERROR START*****************")
+        if (idx > -1) { url = url.substring(idx + 1); }
+        console.log("In " + url + " (line #" + lineNo + ", column #" + columnNo + "): " + msg);
+        console.log(error.stack);
+        console.log("**************JAVASCRIPT ERROR END*****************");
+
+        flax.showDebugError("In " + url + " (line #" + lineNo + ", column #" + columnNo + "): " + msg + "\n" + error.stack)
+
+        return false; //suppress Error Alert;
+
+    };
+}
+
+flax.showStageMask = function(clickDestroy, cb) {
+
+    if (!flax.stageRect) return;
+
+    var w = flax.stageRect.width;
+    var h = flax.stageRect.height;
+
+    var bg = new flax.Graphics();
+    bg.beginFill(0x000000, 0.5);
+    bg.drawRect(0, 0, w, h);
+    bg.endFill();
+    flax.stage.addChild(bg);
+    bg.interactive = true;
+
+    flax.inputManager.addListener(bg, function () {
+        if (clickDestroy) {
+            bg.destroy();
+        }
+        if (cb) cb();
+    });
+
+    return bg;
+}
+
+flax.showDebugError = function(msg) {
+
+    if(!flax.stageRect) return;
+    var w = flax.stageRect.width;
+
+    var style = new PIXI.TextStyle({
+        fontSize: 24,
+        fill: "#FFFFFF",
+        align: "left",
+        stroke: 0x000000,
+        strokeThickness: 5,
+        wordWrap: true,
+        breakWords: true,// For chinese words specially
+        wordWrapWidth: w - 50
+    });
+
+    var vTxt= new flax.Text(msg, style);
+
+    flax.showStageMask(true, function() {
+        vTxt.removeFromParent();
+    });
+
+    vTxt.x = 50;
+    vTxt.y = 50;
+    flax.currentScene.addChild(vTxt);
+}
+
+if(flax.isMobile) catchAllErrors();

@@ -2,7 +2,7 @@
  * Created by long on 15/11/16.
  */
 
-var _superCls = FRAMEWORK == "pixi" ? PIXI.ParticleContainer : cc.Sprite;
+var _superCls = PIXI.particles.ParticleContainer;
 
 flax.BitmapLabel = _superCls.extend({
     mlWidth:0.0,
@@ -13,11 +13,12 @@ flax.BitmapLabel = _superCls.extend({
     chars:[],
     assetsFile:null,
     name:null,
-    params:null,
+    params: null,
+    style: null,
+    styleStr: "",
     _str:null,
     _gap:0,
     _spaceGap:10,
-    _charCanvas:null,
     _fontDefine:null,
     _isRealFont:false,
 
@@ -34,7 +35,7 @@ flax.BitmapLabel = _superCls.extend({
         this.frames = null;
         this.chars = null;
         this.params = null;
-        this._charCanvas = null;
+        this.style = null;
         this._fontDefine = null;
     },
     getString:function()
@@ -93,6 +94,15 @@ flax.BitmapLabel = _superCls.extend({
         this.frames = flax.assetsManager.getFrameNames(this.assetsFile, parseInt(this._fontDefine['start']), parseInt(this._fontDefine['end']));
         this.chars = this._fontDefine['chars'];
         if(this._isRealFont) this.fontSize = parseInt(this._fontDefine['size']);
+
+        this.style = new PIXI.TextStyle({
+            fontFamily: this.params.font,
+            fontSize: this.params.fontSize * flax.resolution,
+            fill: this.params.fontColor,
+            align: this.params.textAlign,
+            wordWrap: false
+        });
+        this.styleStr = this.style.toFontString();
     },
     tweenInt:function(from, to, time) {
         this.setString(from);
@@ -116,23 +126,16 @@ flax.BitmapLabel = _superCls.extend({
     {
         if(!this.parent || !this._str || !this._str.length) return;
 
-        if(this._charCanvas == null) {
-            if(FRAMEWORK == "cocos") {
-                var imgFile = flax.path.changeBasename(this.assetsFile, ".png");
-                this._charCanvas = new flax.SpriteBatchNode(imgFile, this._str.length);
-                this.addChild(this._charCanvas);
-            } else if(FRAMEWORK == "pixi") {
-                this._charCanvas = this;
-                this._fontContext = PIXI.Text.fontPropertiesContext;
-                this._fontContext.font = this.params.fontSize + "px " + this.params.font;
-            }
-        }
-
         if(!this._isRealFont) this.params.textHeight = 0;
-        this._charCanvas.removeAllChildren();
+        this.removeAllChildren();
+
+        var fontCache = flax.BitmapLabel.fontCache;
+        var frameCache = flax.spriteFrameCache;
+        var params = this.params;
 
         this.mlWidth = 0;
         this.mlHeight = 0;
+
         for(var i = 0; i < this._str.length ; i++)
         {
             var ch = this._str[i];
@@ -150,57 +153,62 @@ flax.BitmapLabel = _superCls.extend({
 
             if(charIndex == -1)
             {
-                flax.log("Not found the char: "+ch + " in the fonts: "+ this.fontName);
+                console.log("Not found the char: "+ ch + " in the fonts: "+ this.fontName);
                 continue;
             }
             //todo, use pool for performance improve
-            var sprite = new flax.Sprite(flax.spriteFrameCache.getSpriteFrame(this.frames[charIndex]));
+            var sprite = new flax.Sprite(frameCache.getSpriteFrame(this.frames[charIndex]));
             sprite.setAnchorPoint(this._fontDefine.anchorX, this._fontDefine.anchorY);
             sprite.x = this.mlWidth;
             sprite.y = 0;
-            this._charCanvas.addChild(sprite);
+            this.addChild(sprite);
 
             // calculate the position of the sprite;
-            var size = sprite.getContentSize();
+            //var size = sprite.getContentSize();
 
-            //in pixi, we have a better method to measure font's width
-            if(FRAMEWORK == "pixi") {
-                size.width = this._fontContext.measureText(ch).width;
+            //Use cache to improve performance
+            var key = this.styleStr + "@" + ch;
+            var size = fontCache[key];
+            if(!size) {
+                fontCache[key] = size = PIXI.TextMetrics.measureText(ch,  this.style, false);
             }
+
             this.mlWidth += size.width;
+
             if(i != this._str.length -1) this.mlWidth += this._gap;
             this.mlHeight = size.height > this.mlHeight ? size.height : this.mlHeight;
-            if(!this._isRealFont && this.params.textHeight < size.height) this.params.textHeight = size.height;
+            if(!this._isRealFont && params.textHeight < size.height) params.textHeight = size.height;
         }
 
-        if(this.params && this.params.textWidth && this.params.textHeight){
+        if(params && params.textWidth && params.textHeight){
+            var textWidth = params.textWidth;
             //restrain the text within the rectangle
-            var rx = this.mlWidth/this.params.textWidth;
-            var ry = this.mlHeight/this.params.textHeight;
+            var rx = this.mlWidth/textWidth;
+            var ry = this.mlHeight/params.textHeight;
             var r = Math.max(rx, ry);
             var deltaY = 0;
-            if(r > 1){
+            if(r > 1)
+            {
                 var rscale = 1/r;
-                this._charCanvas.setScale(rscale);
+                this.setScale(rscale);
                 deltaY = this.mlHeight*(1 - 1/r)*r;
                 this.mlWidth *= rscale;
                 this.mlHeight *= rscale;
-
+            } else {
+                this.setScale(1.0);
             }
             //enable the center align
-            var deltaX = (this.params.textWidth - this.mlWidth)/2;
-            i = this._charCanvas.childrenCount;
+            var deltaX = (textWidth - this.mlWidth)/2;
+            i = this.childrenCount;
             while(i--){
-                var charChild = this._charCanvas.children[i];
-                if(H_ALIGHS[this.params.textAlign] == "center") charChild.x += deltaX;
-                else if(H_ALIGHS[this.params.textAlign] == "right") charChild.x += 2*deltaX;
-                charChild.y -= deltaY;
+                var charChild = this.children[i];
+                if(!charChild) {
+                    continue;
+                }
+                if(params.textAlign == "center") charChild.x += deltaX;
+                else if(params.textAlign == "right") charChild.x += 2*deltaX;
+                charChild.y += deltaY;
             }
-        }
-
-        if(FRAMEWORK == "cocos") {
-            this._charCanvas.setContentSize(this.mlWidth, this.mlHeight);
-            this.setContentSize(this.mlWidth, this.mlHeight);
         }
     },
     _findCharIndex: function (ch) {
@@ -226,7 +234,7 @@ flax.BitmapLabel = _superCls.extend({
 
         return charIndex;
     },
-    getBounds:function(coordinate)
+    getBounds1:function(coordinate)
     {
         if(coordinate == null) coordinate = true;
         var border = 2;
@@ -245,6 +253,9 @@ flax.BitmapLabel = _superCls.extend({
         this.removeFromParent();
     }
 });
+
+flax.BitmapLabel.fontCache = {};
+
 /**
  * @deprecated
  * */
@@ -252,7 +263,7 @@ flax.Label = flax.BitmapLabel;
 /**
  * @deprecated
  * */
-flax.BitmapLabel.prototype.getRect = flax.BitmapLabel.prototype.getBounds;
+flax.BitmapLabel.prototype.getRect = flax.BitmapLabel.prototype.getBounds1;
 
 var _p = flax.BitmapLabel.prototype;
 /** @expose */
@@ -272,7 +283,7 @@ flax.BitmapLabel.createFromAnim = function (assetsFile, assetID, text) {
     var lbl = new flax.BitmapLabel();
     flax.assetsManager.addAssets(assetsFile);
     lbl.assetsFile = assetsFile;
-    lbl.params = {textWidth:0, textHeight:0, textAlign:0};
+    lbl.params = {textWidth:0, textHeight:0, textAlign:"left"};
     lbl.setFontName(assetID);
     lbl.setAnchorPoint(0, 0);
     lbl.setString(text);

@@ -14,7 +14,7 @@ flax.Animator = flax.FlaxSprite.extend({
         this.totalFrames = this._frameNames.length;
         if(this.totalFrames == 0)
         {
-            flax.log("There is no frame for display: "+this.assetID);
+            console.log("There is no frame for display: "+this.assetID);
             return;
         }
     },
@@ -25,9 +25,7 @@ flax.Animator = flax.FlaxSprite.extend({
     doRenderFrame:function(frame)
     {
         var texture = flax.spriteFrameCache.getSpriteFrame(this._frameNames[frame]);
-        if(FRAMEWORK == "cocos") this.setSpriteFrame(texture);
-        else if(FRAMEWORK == "pixi") this._texture = texture;
-        else flax.log("todo render frame for other engine!")
+        this.texture = texture;
     },
     getDefine:function()
     {

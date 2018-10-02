@@ -3,6 +3,11 @@
  */
 var flax = flax || {};
 
+flax._clsInstanceId = (0|(Math.random()*998));
+flax.getInstanceId = function () {
+    return flax._clsInstanceId++;
+}
+
 /**
  * Add OOP class style for cls, after that, cls can use ctor as constructor function and use this._super to invoke
  * parent's function
@@ -105,11 +110,12 @@ flax.nameToObject = function(name, type) {
         try{
             fn = fn[arr[i]];
         }catch(err){
+            //console.log(name, err, window);
             break;
         }
     }
     if (typeof fn !== type) {
-//        flax.log(type +" not found: " + name);
+        //console.log(type +" not found: " + name);
         return null;
     }
     return  fn;
@@ -118,8 +124,3 @@ flax.nameToObject = function(name, type) {
 flax.Class = function () {}
 flax.Class.prototype.constructor = flax.Class;
 flax.toClass(flax.Class);
-
-flax._clsInstanceId = (0|(Math.random()*998));
-flax.getInstanceId = function () {
-    return flax._clsInstanceId++;
-}

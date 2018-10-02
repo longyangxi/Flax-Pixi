@@ -3,7 +3,6 @@
  */
 
 var flax  = flax || {};
-if(!flax.Module) flax.Module = {};
 
 flax.Module.Shake = {
     _shakeTarget:null,
@@ -13,9 +12,8 @@ flax.Module.Shake = {
     _shakeCount:0,
     _maxCount:0,
     _shakeRange:0,
-    startShake:function(target, range, count)
+    startShake:function(target, range, count, interval)
     {
-        //if(this._shakeTarget) return;
         this.stopShake();
 
         this._shakeTarget = target;
@@ -23,17 +21,16 @@ flax.Module.Shake = {
         this._shakeRange = range > 0 ? range : 8;
         this._maxCount = count > 0 ? count : 5;
 
-        this._originPos = target.getPosition();
+        this._originPos = flax.p(target.getPosition());
         this._shakeCount = 0;
         this._lastAxis = "";
 
-        this.schedule(this._doShake, flax.frameInterval);
+        target.schedule(this._doShake.bind(this), interval || flax.frameInterval, count);
     },
     stopShake: function () {
         if(!this._shakeTarget) return;
         if(this._originPos) this._shakeTarget.setPosition(this._originPos);
         this._shakeTarget = null;
-        this.unschedule(this._doShake);
     },
     _doShake:function()
     {

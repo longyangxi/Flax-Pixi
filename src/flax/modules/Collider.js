@@ -9,6 +9,12 @@ if(!flax.Module) flax.Module = {};
 flax.ColliderType = {
     rect: "Rect",
     circle: "Circle",
+    poly3: "Poly3",
+    poly4: "Poly4",
+    poly5: "Poly5",
+    poly6: "Poly6",
+    poly7: "Poly7",
+    poly8: "Poly8",
     polygon: "Poly"
 };
 
@@ -22,6 +28,8 @@ flax.Collider = flax.Class.extend({
     _rotation:0,
     _localRect:null,
     _polygons:null,
+    _polygonsStr: "",
+    _polygonBounds: null,
     _originData:null,
     _clickArea:null,
     _debugNode:null,
@@ -38,13 +46,29 @@ flax.Collider = flax.Class.extend({
         this._width = parseFloat(data[3]);
         this._height = parseFloat(data[4]);
         this._rotation = parseFloat(data[5]);
-        //polygon data
-        if(data.length > 6){
+
+        if(this.type == flax.ColliderType.polygon){
             this._polygons = [];
             var arr = data[6].split("'");
+            this._polygonsStr = arr.join(" ");
             for(var i = 0; i < arr.length - 1; i += 2){
                 var pos = {x:parseFloat(arr[i]), y:parseFloat(arr[i + 1])};
                 this._polygons.push(pos);
+            }
+        } else if(this.type.indexOf("Poly") > -1) {
+            var sideCount = parseInt(this.type.replace("Poly", ""));
+            if(isNaN(sideCount)) {
+                console.warn("This is not a valid polygon specification!");
+                return;
+            }
+            var radius = polygon_half_width_to_radius[sideCount] * this._width/2;
+            var points = flax.getPolygonPoints(radius, sideCount);
+            this._polygonBounds = flax.findPolygonBounds(points);
+            this._polygonsStr = "";
+            for(var i = 0; i < points.length - 1; i++) {
+                var p = points[i];
+                this._polygonsStr +=  p.x + " " + p.y;
+                if(i != points.length -1) this._polygonsStr += " ";
             }
         }
         this._localRect = flax.rect(this._center.x - this._width/2, this._center.y - this._height/2, this._width, this._height);
@@ -63,6 +87,11 @@ flax.Collider = flax.Class.extend({
         if(this.owner == owner) return;
         this.owner = owner;
         this.owner.retain();
+        var bounds = this._polygonBounds;
+        //adjust anchor point of the special polygons
+        if(bounds) {
+            owner.setAnchorPoint(0.5 - bounds.centerX/this._width, 0.5 - bounds.centerY/this._height);
+        }
     },
     //todo, with polygon
     checkCollision:function(collider){
@@ -162,21 +191,11 @@ flax.Collider = flax.Class.extend({
         var w = this._width;
         var h = this._height;
         //In pixi or other frameworks, no need to scale the size
-        if(FRAMEWORK == "cocos") {
-            var s = flax.getScale(this.owner, coordinate);
-            w *= Math.abs(s.x);
-            h *= Math.abs(s.y);
-        }
         return {width:w, height:h};
     },
     debugDraw:function(){
 
-        if(FRAMEWORK == "pixi") {
-            this._debugDraw_pixi();
-        } else if(FRAMEWORK == "cocos") {
-            this._debugDraw_cocos();
-        }
-
+        this._debugDraw_pixi();
     },
     _debugDraw_pixi: function () {
 
@@ -216,44 +235,6 @@ flax.Collider = flax.Class.extend({
             drawNode.lineTo(first.x, first.y);
         }
         drawNode.endFill();
-    },
-    _debugDraw_cocos: function () {
-
-        var rect = this.getBounds(true);
-
-        if(this._debugNode == null) {
-            this._debugNode = cc.DrawNode.create();
-            if(flax.currentScene) flax.currentScene.addChild(this._debugNode, flax.currentScene.childrenCount);
-        } else {
-            this._debugNode.clear();
-        }
-        var drawNode = this._debugNode;
-
-        var lineWidth = 1;
-        var lineColor = cc.color(255, 0, 0, 255);
-        var fillColor = cc.color(0, 255, 0, 122);
-
-        if(this.type == flax.ColliderType.rect){
-            var dp = flax.pAdd(flax.p(rect.x, rect.y), flax.p(rect.width, rect.height));
-            drawNode.drawRect(flax.p(rect.x, rect.y), dp, null, lineWidth, lineColor);
-        }else{
-            if(this.type == flax.ColliderType.circle){
-                drawNode.drawCircle(this.getCenter(true), rect.width/2, 0, 360, false,lineWidth, lineColor, fillColor);
-            }else{
-                var first = null;
-                var from = null;
-                var to = null;
-                for(var i = 0; i < this._polygons.length - 1; i ++){
-                    from = flax.p(this._polygons[i]);
-                    from = this.owner.convertToWorldSpace(from);
-                    if(i == 0) first = flax.p(from);
-                    to = flax.p(this._polygons[i + 1]);
-                    to = this.owner.convertToWorldSpace(to);
-                    drawNode.drawSegment(from, to, lineWidth, lineColor, fillColor)
-                }
-                drawNode.drawSegment(to, first, lineWidth, lineColor, fillColor)
-            }
-        }
     }
 });
 
@@ -310,14 +291,9 @@ flax.Module.Collider = {
         }
         var cx = w/2;
         var cy = h/2;
-        //todo, fix in cocos as pixi
-        if(FRAMEWORK == "cocos") {
-            this._mainCollider = new flax.Collider("Rect," + cx + "," + cy + "," + w + "," + h + ",0");
-        } else {
-            cx -= this.anchor.x*w;
-            cy -= this.anchor.y*h;
-            this._mainCollider = new flax.Collider("Rect," + cx + "," + cy + "," + w + "," + h + ",0");
-        }
+        cx -= this.anchor.x*w;
+        cy -= this.anchor.y*h;
+        this._mainCollider = new flax.Collider("Rect," + cx + "," + cy + "," + w + "," + h + ",0");
         this._mainCollider.name = "main";
         this._mainCollider.setOwner(this);
     },
@@ -352,19 +328,13 @@ flax.Module.Collider = {
     },
     mainCollider:{
         get: function () {
-            var c = this._mainCollider;
-            if(c) {
+            if(this._mainCollider) {
                 //fix the zero size bug
-                if((c._width == 0 && this.width > 0) || (c._height == 0 && this.height > 0)) {
+                if((this._mainCollider._width == 0 && this.width > 0) || (this._mainCollider._height == 0 && this.height > 0)) {
                     this._initMainCollider();
                 }
-            } else {
-                console.log("***The collider is null, todo!")
-                c = new flax.Collider("Rect," + 0 + "," + 0 + "," + 0 + "," + 0 + ",0");
-                c.name = "main";
-                c.setOwner(this);
             }
-            return c;
+            return this._mainCollider || flax.ZERO_RECT;
         }
     },
     center:{
@@ -381,6 +351,11 @@ flax.Module.Collider = {
             }
         }
         return c;
+    },
+    colliders: {
+        get: function() {
+            return this._colliders;
+        }
     },
     /**
      * Use for cocos only now, in pixi will invoke pixi's getBounds

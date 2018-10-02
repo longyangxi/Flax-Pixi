@@ -50,7 +50,6 @@ flax.AssetsManager = flax.Class.extend({
     fontsCache:null,
     imageCache:null,
     metaCache:null,
-    spriteFrames:null,
 
    ctor:function()
    {
@@ -60,9 +59,8 @@ flax.AssetsManager = flax.Class.extend({
        this.mcsCache = {};
        this.subAnimsCache = {};
        this.fontsCache = {};
-       this.imageCache = {};
+       this.imageCache = [];
        this.metaCache = {};
-       this.spriteFrames = {};
    },
    getAssetType:function(assetsFile, assetID)
    {
@@ -139,8 +137,11 @@ flax.AssetsManager = flax.Class.extend({
                     clsName = isMC ? flax._assetsMcClassMap[clsName] : flax._assetsClassMap[clsName];
                     //Handle the scale9Image
                     if(clsName == "flax.Image" && define['scale9']){
-                        clsName = "flax.Scale9Image";
-                        if(flax.Scale9Image == null) throw "Please add module of 'gui' or 'ccui'(cocos 3.10 later) into project.json if you want to use Scale9Image!";
+                        if(flax.Scale9Image != null) {
+                            clsName = "flax.Scale9Image";
+                        } else {
+                            console.warn("Please add module of 'gui' or 'ccui'(cocos 3.10 later) into project.json if you want to use Scale9Image!");
+                        }
                     }
                     mcCls = flax.nameToObject(clsName);
                 }
@@ -163,10 +164,13 @@ flax.AssetsManager = flax.Class.extend({
         delete params.parent;
         if(fromPool === true) {
             mc = flax.ObjectPool.get(assetsFile,clsName,assetID).fetch(assetID, null, params);
-            var view = mc.getCollider ? mc.getCollider("mask") : null;
-            if(view) {
-                this._createMask(mc, view, parent, params);
-            } else if(parent) {
+            //var view = mc.getCollider ? mc.getCollider("mask") : null;
+            //if(view) {
+            //    this._createMask(mc, view, parent, params);
+            //} else if(parent) {
+            //    parent.addChild(mc);
+            //}
+            if(parent) {
                 parent.addChild(mc);
             }
         }else{
@@ -174,47 +178,47 @@ flax.AssetsManager = flax.Class.extend({
             else mc = new mcCls(assetsFile, assetID);
             flax.copyProperties(params, mc);
 
-            var view = mc.getCollider ? mc.getCollider("mask") : null;
-            if(view) {
-                this._createMask(mc, view, parent, params);
-                mc.clsName = clsName;
-                return mc;
-            }
+            //var view = mc.getCollider ? mc.getCollider("mask") : null;
+            //if(view) {
+            //    this._createMask(mc, view, parent, params);
+            //    mc.clsName = clsName;
+            //    return mc;
+            //}
 
             if(parent) parent.addChild(mc);
             mc.clsName = clsName;
         }
         return mc;
     },
-    _createMask: function (mc, view, parent, params) {
-
-        var viewRect = view.getRect(false);
-
-        //todo, 根据任意形状画出来,然后做遮罩,在createDisplay的时候就做
-        //todo, pixi的做法
-
-        var stencil = new cc.DrawNode();
-        var color = cc.color(255, 0, 0, 255);
-        var rect = flax.rect(0, 0, viewRect.width, viewRect.height);
-        stencil.drawRect(flax.p(rect.x, rect.y), flax.p(rect.width, rect.height), color);
-        stencil.__originPos = flax.p(viewRect.x, viewRect.y);
-        stencil.setPosition(stencil.__originPos);
-        stencil.setContentSize(rect.width, rect.height);
-
-
-        var clipper = new cc.ClippingNode();
-
-        clipper.setContentSize(mc.getContentSize());
-
-        flax.copyProperties(params, clipper);
-
-        clipper.stencil = stencil;
-        if(parent) parent.addChild(clipper);
-
-        mc.mask = clipper;
-
-        clipper.addChild(mc);
-    },
+    //_createMask: function (mc, view, parent, params) {
+    //
+    //    var viewRect = view.getRect(false);
+    //
+    //    //todo, 根据任意形状画出来,然后做遮罩,在createDisplay的时候就做
+    //    //todo, pixi的做法
+    //
+    //    var stencil = new cc.DrawNode();
+    //    var color = cc.color(255, 0, 0, 255);
+    //    var rect = flax.rect(0, 0, viewRect.width, viewRect.height);
+    //    stencil.drawRect(flax.p(rect.x, rect.y), flax.p(rect.width, rect.height), color);
+    //    stencil.__originPos = flax.p(viewRect.x, viewRect.y);
+    //    stencil.setPosition(stencil.__originPos);
+    //    stencil.setContentSize(rect.width, rect.height);
+    //
+    //
+    //    var clipper = new cc.ClippingNode();
+    //
+    //    clipper.setContentSize(mc.getContentSize());
+    //
+    //    flax.copyProperties(params, clipper);
+    //
+    //    clipper.stencil = stencil;
+    //    if(parent) parent.addChild(clipper);
+    //
+    //    mc.mask = clipper;
+    //
+    //    clipper.addChild(mc);
+    //},
     /**
      * Clone a new display from the target, if fromPool = true, it'll be fetched from the pool
      * It only supports flax.FlaxSprite or its sub classes
@@ -232,86 +236,77 @@ flax.AssetsManager = flax.Class.extend({
         obj.zIndex = target.zIndex;
         return obj;
     },
-    removeAssets:function(assetsFile, onlyTexture)
-    {
-        var ext = flax.path.extname(assetsFile);
+    getTexture: function(assetFile, assetID, frame) {
+        if(frame == null) frame = 0;
+        var define = this.getDisplayDefine(assetFile, assetID);
+        var frameNames = this.getFrameNames(assetFile, define['start'], define['end']);
+        return flax.spriteFrameCache.getSpriteFrame(frameNames[frame]);
+    },
+    getTextures: function(assetFile, assetID, startFrame, endFrame) {
 
-        //release the plist assets
-        if(ext == ".plist" || ext == ".json" || ext == ".flax") {
-            var assetsFile1 = assetsFile;
-            if(ext == ".flax") assetsFile1 = flax.path.changeBasename(assetsFile1, DATA_FORMAT);
-            if(onlyTexture !== true) {
-                delete this.framesCache[assetsFile];
-                delete this.displaysCache[assetsFile];
-                delete this.displayDefineCache[assetsFile];
-                delete this.mcsCache[assetsFile];
-                delete this.subAnimsCache[assetsFile];
-                delete this.fontsCache[assetsFile];
-                delete this.metaCache[assetsFile];
-                //flax.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
-                flax.loader.release(assetsFile1);
-            }
-            flax.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
-            delete this.spriteFrames[assetsFile]
-            this.removeSingleImgsCache(assetsFile1);
+        var define = this.getDisplayDefine(assetFile, assetID);
+
+        if(startFrame == null || startFrame < define['start']) startFrame = define['start'];
+        if(endFrame == null || endFrame < define['end']) endFrame = define['end'];
+
+        var frameNames = this.getFrameNames(assetFile, startFrame, endFrame);
+
+        var textures = [];
+
+        for(var i = 0; i < frameNames.length; i++) {
+            textures.push(flax.spriteFrameCache.getSpriteFrame(frameNames[i]));
         }
 
-        var pngFile = flax.path.changeBasename(assetsFile, ".png");
-        flax.loader.release(pngFile);
-        if(FRAMEWORK == "cocos") {
-            cc.textureCache.removeTextureForKey(pngFile);
-        } else {
-            //todo
-        }
+        return textures;
     },
-    removeAllAssets:function(onlyTexture)
+    removeAssets:function(assetsFile)
     {
-        for(var file in this.framesCache) {
-            this.removeAssets(file, onlyTexture);
-        }
-        for(var plist in this.imageCache) {
-            this.removeSingleImgsCache(this.imageCache[plist]);
-        }
-    },
-    removeSingleImgsCache:function(plist){
-        var imgCache = this.imageCache[plist];
-        if(!imgCache) return;
-        for(var i = 0; i < imgCache.length; i++) {
-            var img = imgCache[i];
-            flax.loader.release(img);
-            if(FRAMEWORK == "cocos") {
-                cc.textureCache.removeTextureForKey(img);
-            } else {
-                //todo
-            }
-        }
-        delete this.imageCache[plist];
-    },
-    addAssets:function(assetsFile, fullParse)
-    {
-        var dataParsed = this.framesCache[assetsFile];
-        var frameParsed = this.spriteFrames[assetsFile];
-
-        if(dataParsed && frameParsed) return false;
+        delete this.framesCache[assetsFile];
+        delete this.displaysCache[assetsFile];
+        delete this.displayDefineCache[assetsFile];
+        delete this.mcsCache[assetsFile];
+        delete this.subAnimsCache[assetsFile];
+        delete this.fontsCache[assetsFile];
+        delete this.metaCache[assetsFile];
 
         var assetsFile1 = assetsFile;
         var ext = flax.path.extname(assetsFile);
         if(ext == ".flax") assetsFile1 = flax.path.changeBasename(assetsFile1, DATA_FORMAT);
 
-        if(!dataParsed) {
-            var dict = flax.loader.getRes(assetsFile1);
-            if(dict == null){
-                throw "Make sure you have loaded the resource: " + assetsFile;
-            }
+        flax.spriteFrameCache.removeSpriteFramesFromFile(assetsFile1);
+        flax.loader.release(assetsFile1);
+        flax.loader.release(flax.path.changeBasename(assetsFile1, ".png"));
+    },
+    removeAllAssets:function()
+    {
+        for(var file in this.framesCache) {
+            this.removeAssets(file);
         }
-
-        if(fullParse !== false && !frameParsed){
-            flax.spriteFrameCache.addSpriteFrames(assetsFile1);
-            this.spriteFrames[assetsFile] = true;
+        //release all the image cache
+        for(var i = 0; i < this.imageCache.length; i++) {
+            flax.loader.release(this.imageCache[i]);
         }
+        this.imageCache.length = 0;
+        //todo,清除
+        //this.framesCache = {};
+        //this.displaysCache = {};
+        //this.displayDefineCache = {};
+        //this.mcsCache = {};
+        //this.subAnimsCache = {};
+        //this.fontsCache = {};
+        //this.imageCache = [];
+        //this.metaCache = {};
+    },
+    addAssets:function(assetsFile)
+    {
+        if(typeof this.framesCache[assetsFile] !== "undefined") return false;
 
-        if(dataParsed) {
-            return false;
+        var assetsFile1 = assetsFile;
+        var ext = flax.path.extname(assetsFile);
+        if(ext == ".flax") assetsFile1 = flax.path.changeBasename(assetsFile1, DATA_FORMAT);
+        var dict = flax.loader.getRes(assetsFile1);
+        if(dict == null){
+            throw "Make sure you have loaded the resource: " + assetsFile;
         }
 
         //If the assetsFile is not exported from flash
@@ -328,7 +323,7 @@ flax.AssetsManager = flax.Class.extend({
         //get the fps from flash
         var fps = dict["metadata"]["fps"];
 
-        //flax.spriteFrameCache.addSpriteFrames(assetsFile1);
+        flax.spriteFrameCache.addSpriteFrames(assetsFile1);
         //Note: the plist will be released by cocos when addSpriteFrames
         //We want it to be there to check the resource if loaded
         flax.loader.cache[assetsFile1] = "loaded!";
@@ -367,7 +362,7 @@ flax.AssetsManager = flax.Class.extend({
      * */
     _addFromOriginPlist:function(plistFile)
     {
-        if(this.framesCache[plistFile]) return false;
+        if(typeof this.framesCache[plistFile] !== "undefined") return false;
 
         var dict = flax.loader.getRes(plistFile);
         if(dict == null){
@@ -404,7 +399,7 @@ flax.AssetsManager = flax.Class.extend({
     },
     _parseDisplays:function(assetsFile, displays, fps) {
         //the res root path
-        var resDir = assetsFile.slice(0, assetsFile.lastIndexOf("/"));
+        var resDir = flax.getResUrl(assetsFile.slice(0, assetsFile.lastIndexOf("/")));
         var displayNames = [];
         var dDefine = null;
         for(var dName in displays)
@@ -422,8 +417,7 @@ flax.AssetsManager = flax.Class.extend({
             if(dDefine['type'] == "png" || dDefine['type'] == "jpg") {
                 //parse the real path for the image
                 dDefine['url'] = resDir + "/" + dDefine['url'];
-                if(this.imageCache[assetsFile] == null) this.imageCache[assetsFile] = [];
-                this.imageCache[assetsFile].push(dDefine['url']);
+                this.imageCache.push(dDefine['url']);
                 //if(dDefine['scale9']) cc.log(dDefine['url'])
             }
         }
@@ -440,6 +434,13 @@ flax.AssetsManager = flax.Class.extend({
             for(var childName in childrenDefine)
             {
                 childDefine = childrenDefine[childName];
+                //Language label parse, TODO, to be more clear
+                if(childName.indexOf("label__") == 0) {
+                    var pureChildName = childName.replace("label__", "");
+                    childDefine._isLanguageElement = true;
+                    childrenDefine[pureChildName] = childDefine;
+                    delete childrenDefine[childName];
+                }
                 childDefine.frames = this._strToArray(childDefine.frames);
             }
             mcDefine['fps'] = fps || flax.game.config["frameRate"];

@@ -24,10 +24,8 @@ flax.getLayoutPosition = function(target, hLayout, vLayout)
     var rect = flax.getBounds(target, false);
     var screenRect = flax.visibleRect;
 
-    var hArr = [screenRect.left.x, screenRect.center.x, screenRect.right.x];
-    var vArr = [screenRect.bottom.y, screenRect.center.y, screenRect.top.y];
-    var x = hArr[hLayout];
-    var y = vArr[vLayout];
+    var x = screenRect.hArr[hLayout];
+    var y = screenRect.vArr[vLayout];
 
     if(x == null || y == null) {
         throw "Invalid layout!"
@@ -36,23 +34,16 @@ flax.getLayoutPosition = function(target, hLayout, vLayout)
     var pos = flax.p(x, y);
 
     var cx = rect.x + LayoutRate[hLayout]*rect.width;
-    var lRate = FRAMEWORK == "cocos" ? LayoutRate : LayoutRate1;
+    var lRate = LayoutRate1;
     var cy = rect.y + lRate[vLayout]*rect.height;
 
     pos.x -= cx;
     pos.y -= cy;
 
-    //if(target.parent){
-    //    if(flax.currentScene) {
-    //        pos = flax.currentScene.convertToWorldSpace(pos);
-    //        pos = target.parent.convertToNodeSpace(pos);
-    //    }
-    //}
-
     return pos;
 }
 
-flax.getLayoutPosition_cocos = function(target, hLayout, vLayout)
+flax.getLayoutPosition_old = function(target, hLayout, vLayout)
 {
     var rect = flax.getBounds(target, true);
     var sCenter = flax.visibleRect.center;
@@ -84,7 +75,7 @@ flax.getLayoutPosition_cocos = function(target, hLayout, vLayout)
             break;
     }
 
-    var scale = FRAMEWORK == "cocos" ? flax.getScale(target, true) : {x:1.0, y: 1.0};
+    var scale = {x:1.0, y: 1.0};
 
     var offsetX = !hLayout ? flax.visibleRect.bottomLeft.x : 0;
     var offsetY = !vLayout ? flax.visibleRect.bottomLeft.y : 0;
@@ -140,8 +131,7 @@ flax.Module.ScreenLayout = {
         this._isAutoLayout = false;
         this._hlayout = hLayout;
         this._vlayout = vLayout;
-        //todo, 用一个模式，目前cocos下位置不对，如果注册点在flash的左上角，居中不对
-        var pos = FRAMEWORK == "cocos" ? flax.getLayoutPosition_cocos(this, hLayout, vLayout) : flax.getLayoutPosition(this, hLayout, vLayout);
+        var pos = flax.getLayoutPosition(this, hLayout, vLayout);
         pos.x += this._offsetX;
         pos.y += this._offsetY;
         this.setPosition(pos);
@@ -211,7 +201,7 @@ flax.Module.ScreenLayout = {
             //}
         }
     },
-    _updateLayout:function(orientation)
+    _updateLayout:function(landscape)
     {
         if(this._isAutoLayout){
             this.autoLayout();

@@ -13,13 +13,13 @@ flax.ObjectPool = flax.Class.extend({
     init:function(assetsFile, clsName, maxCount)
     {
         if(this._assetsFile && this._cls){
-            flax.log("The pool has been inited with cls: "+this._cls);
+            console.log("The pool has been inited with cls: "+this._cls);
             return false;
         }
         this._clsName = clsName;
         this._cls = flax.nameToObject(clsName);
         if(this._cls == null){
-            flax.log("There is no class named: "+clsName);
+            console.log("There is no class named: "+clsName);
             return false;
         }
         this._assetsFile = assetsFile;
@@ -30,7 +30,7 @@ flax.ObjectPool = flax.Class.extend({
     fetch:function(assetID, parent, params)
     {
         if(assetID == null){
-            flax.log("Please give me a assetID to fetch a object!");
+            console.log("Please give me a assetID to fetch a object!");
             return null;
         }
         var obj = null;
@@ -58,17 +58,17 @@ flax.ObjectPool = flax.Class.extend({
         }
         obj.attr(params);
         if(parent) parent.addChild(obj);
-//        flax.log("fetch: "+obj.assetID);
+//        console.log("fetch: "+obj.assetID);
         return obj;
     },
     recycle:function(object)
     {
         if(!(object instanceof this._cls)){
-            flax.log("The object to recycle is not the same type with this pool: "+this._clsName);
+            console.log("The object to recycle is not the same type with this pool: "+this._clsName);
             return;
         }
         if(this._pool.length < this.maxCount){
-//            flax.log("recycle: "+object.assetID);
+//            console.log("recycle: "+object.assetID);
 //            object.onRecycle&&object.onRecycle();
             object.retain && object.retain();
             this._pool.push(object);

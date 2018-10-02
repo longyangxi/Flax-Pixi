@@ -32,7 +32,7 @@ flax.getScale = function(sprite, coordinate)
     var sx = 1.0;
     var sy = 1.0;
     var p = sprite;
-    while(p)
+    while(p && p != flax.stage)
     {
         sx *= p.scaleX;
         sy *= p.scaleY;
@@ -65,13 +65,14 @@ flax.getBounds = function(sprite, coordinate)
         rect = sprite.getBounds(coordinate);
         return rect;
         //edit box it is layer
-    }else if(FRAMEWORK == "cocos" && (sprite instanceof cc.Layer || sprite instanceof cc.Scene) && (!cc.EditBox || !(sprite instanceof cc.EditBox))){
-        return flax.stageRect;
     }
+    //else if(FRAMEWORK == "cocos" && (sprite instanceof cc.Layer || sprite instanceof cc.Scene) && (!cc.EditBox || !(sprite instanceof cc.EditBox))){
+    //    return flax.stageRect;
+    //}
     if(coordinate == null) coordinate = true;
 
     var size = sprite.getContentSize();
-    var s = FRAMEWORK == "cocos" ? flax.getScale(sprite, coordinate) : {x: 1.0, y: 1.0};
+    var s = {x: 1.0, y: 1.0};
 
     var pos = sprite.getPosition();
     if(sprite.parent){

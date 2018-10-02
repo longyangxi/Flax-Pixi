@@ -1,11 +1,3 @@
-/**
- * @author       Longsir <longames@qq.com>
- * @copyright    2015 Longames Ltd.
- * @github       {@link https://github.com/longyangxi/flax.js}
- * @flax         {@link http://flax.so}
- * @license      MIT License: {@link http:http://mit-license.org/}
- */
-
 HTTP_TIME_OUT = 8000;
 
 /**
@@ -20,17 +12,18 @@ function http_get(url, callback, params, isPost, errorcallback, responseType, tr
     var xhr = window.XMLHttpRequest ? new window.XMLHttpRequest() : new ActiveXObject("MSXML2.XMLHTTP");
 
     if(isPost){
-        var paramsStr = "params=" + JSON.stringify(params);
+        var paramsStr = JSON.stringify(params);
         xhr.open("POST", url);
-        if(paramsStr !== "") rUrl = url + "?" + paramsStr;
-        console.log("send post: " + rUrl);
+        console.log("send post: " + url, paramsStr);
     }else{
-        var paramsStr = flax.encodeUrlVars(params);
+        var paramsStr = encodeUrlVars(params);
         var rUrl = url;
         if(paramsStr !== "") rUrl = url + "?" + paramsStr;
         console.log("send get: " + rUrl);
         xhr.open("GET",rUrl);
     }
+
+    //xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 
     if(responseType) {
@@ -78,8 +71,35 @@ function http_get(url, callback, params, isPost, errorcallback, responseType, tr
                 }
             }
         }else{
-            //console.log(xhr.status + ", " + xhr.readyState)
+            //cc.log(xhr.status + ", " + xhr.readyState)
         }
         clearTimeout(tId);
+    }
+}
+
+function encodeUrlVars(params, useJson) {
+    if(!params) return "";
+    var paramsStr = "";
+    for(var key in params){
+        if(paramsStr != "") paramsStr += "&";
+        paramsStr += key + "=" + encodeURIComponent(params[key]);
+    }
+    return paramsStr;
+}
+
+/**
+ * 获取get参数
+ * */
+function urlParams(name){
+    try{
+        var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+        if (results==null){
+            return null;
+        }
+        else{
+            return decodeURI(results[1]) || 0;
+        }
+    } catch (e) {
+        return {};
     }
 }

@@ -2,9 +2,9 @@
   "modules" : {
     "core" : {
       "base" : [
+        "loading.js",
         "core/signal/SignalBinding.js",
         "core/signal/Signal.js",
-        "core/signal/wrapper.js",
         "Const.js",
         "Class.js",
         "Flax.js",
@@ -14,6 +14,7 @@
         "core/utils/Point.js",
         "core/utils/Rect.js",
         "core/utils/Path.js",
+        "core/utils/Polygon.js",
         "core/Modular.js",
         "modules/Draggable.js",
         "libs/Tween.js"
@@ -27,30 +28,25 @@
         "core/BitmapLabel.js",
         "core/Button.js",
         "core/ButtonGroup.js",
-        "core/ListView.js"
+        "core/ListView.js",
+        "core/LoadingAnim.js"
       ],
       "pixi_base" : [
         "Stats.js",
-        "libs/pixi-skew.js",
-        "core/pixi/modules/CocosLike.js",
-        "core/pixi/modules/Action.js",
-        "core/pixi/modules/Schedule.js",
-        "core/pixi/FrameCache.js",
-        "core/pixi/Loader.js",
-        "core/pixi/Scheduler.js",
-        "core/pixi/Sprite.js",
-        "core/pixi/TextInput.js"
+        "libs/pixi.js",
+        "core/modules/CocosLike.js",
+        "core/modules/Action.js",
+        "core/modules/Schedule.js",
+        "core/FrameCache.js",
+        "core/Loader.js",
+        "core/Scheduler.js",
+        "core/Sprite.js",
+        "core/TextInput.js"
       ],
       "pixi" : [
-        "core/pixi/Image.js",
-        "core/pixi/ProgressBar.js",
-        "core/pixi/LabelFactory.js"
-      ],
-      "cocos" : [
-        "core/cocos/ScheduleOnce.js",
-        "core/cocos/Image.js",
-        "core/cocos/ProgressBar.js",
-        "core/cocos/LabelFactory.js"
+        "core/Image.js",
+        "core/ProgressBar.js",
+        "core/LabelFactory.js"
       ]
     },
     "game" : {
@@ -60,22 +56,18 @@
         "game/UserData.js",
         "game/Language.js",
         "game/Device.js",
-        "game/SoundButton.js"
+        "game/SoundButton.js",
+        "game/PauseScreenMask.js"
       ],
       "pixi" : [
-        "libs/howler.js",
-        "game/pixi/InputManager.js",
-        "game/pixi/Director.js",
-        "game/pixi/System.js",
-        "game/pixi/ViewPort.js",
-        "game/pixi/TilingSprite.js",
-        "game/pixi/Sound.js",
-        "game/pixi/DebugDraw.js"
-      ],
-      "cocos" : [
-        "game/cocos/InputManager.js",
-        "game/cocos/Sound.js",
-        "game/cocos/DebugDraw.js"
+        "game/InputManager.js",
+        "game/Director.js",
+        "game/System.js",
+        "libs/AudioCocos.js",
+        "game/Sound-cocos.js",
+        "game/ViewPort.js",
+        "game/TilingSprite.js",
+        "game/DebugDraw.js"
       ]
     },
     "modules" : {
@@ -91,6 +83,34 @@
       "common" : [
         "utils/Color.js",
         "utils/String.js"
+      ]
+    },
+    "physics": {
+      "common": [
+        "libs/decomp.js",
+        "libs/matter.js",
+        "game/Physics.js"
+      ]
+    },
+    "filters": {
+      "common": [
+        "libs/filters.js"
+      ]
+    },
+    "particle": {
+      "common": [
+        "libs/pixi-particles.js",
+        "core/Particle.js"
+      ]
+    },
+    "sdk": {
+      "common": [
+        "sdk/Reyun.js",
+        "sdk/wechat.js",
+        "sdk/rankList.js",
+        "sdk/fb.js",
+        "sdk/sdk.js",
+        "sdk/promo.js"
       ]
     }
   }

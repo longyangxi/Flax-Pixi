@@ -19,7 +19,6 @@ flax.ButtonGroup = flax.Class.extend({
         for(var i = 0; i < buttons.length; i++){
 
             var btn = buttons[i];
-            if(!btn) throw "The button must be not null!";
             if(!flax.isButton(btn)) {
                 throw "The element added to a ButtonGroup must be a flax button!"
                 continue;
@@ -58,5 +57,11 @@ flax.ButtonGroup = flax.Class.extend({
         //If touched or just call setSelected
         var ifTouch = flax.mousePos && flax.ifTouched(newSelected, flax.mousePos);
         this.onSelected.dispatch(newSelected, ifTouch);
+    },
+    destroy: function() {
+        this.buttons = null;
+        this.onSelected.removeAll();
+        this.onSelected = null;
+        this.selectedButton = null;
     }
 });

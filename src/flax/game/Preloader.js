@@ -5,15 +5,13 @@ flax.goHomeUrl = function()
 {
     var homeUrl = flax.game.config["homeUrl"] || flax.homeUrl;
     if(!flax.sys.isNative && homeUrl){
-        window.open(homeUrl);
+        if(typeof window.open == "function") window.open(homeUrl);
     }
 };
 
 flax.AbstractPreloader = flax.Scene.extend({
     callback:null,
     context:null,
-    handleIndex:-1,
-    resourcesNotUsed:null,
     initWithResources: function (resources, callback, context) {
         if(typeof resources == "string")
             resources = [resources];
@@ -22,62 +20,34 @@ flax.AbstractPreloader = flax.Scene.extend({
         this.context = context;
     },
     onEnter: function () {
+        if (flax.InputManager) {
+            flax.inputManager = new flax.InputManager();
+            //TODO, longsir-pixi
+            this.addChild(flax.inputManager);
+        }
         this._super();
         //this.startLoad();
     },
     onExit: function () {
         this._super();
-        this.resourcesNotUsed = null;
     },
     startLoad: function () {
         var self = this;
-        self._showProgress(self.resources.length, 1);
-        if(FRAMEWORK == "cocos" && flax.sys.isNative) {
-            this.schedule(self._handleAssets, flax.frameInterval)
-        } else {
-            self._removeUsedAssets();
-            flax.loader.load(self.resources,
-                function (result, count, loadedCount) {
-                    self._showProgress(count, loadedCount);
-                }, function () {
-                    self.onLoadComplete();
-                });
-        }
-
-    },
-    _handleAssets:function() {
-        var self = this;
-        if(self.handleIndex == -1) {
-            self._removeUsedAssets();
-            self.handleIndex++;
-            return;
-        }
-        var reses = self.resources;
-        if(this.handleIndex >= reses.length) {
-            this.unscheduleUpdate();
-            self.onLoadComplete();
-            return;
-        }
-        self._showProgress(reses.length, this.handleIndex + 1);
-        var res = reses[this.handleIndex];
-        if(res.indexOf(".plist") > -1) {
-            flax.assetsManager.addAssets(res, false);
-        }
-        this.handleIndex++;
-    },
-    _removeUsedAssets:function(){
-        if(!this.resourcesNotUsed) return;
-        //If switched a new scene, remove all the assets used in prev scene
-        for(var i in this.resourcesNotUsed) {
-            flax.assetsManager.removeAssets(this.resourcesNotUsed[i], true);
-        }
-        if(FRAMEWORK == "cocos") cc.sys.garbageCollect();
+        flax.loader.load(self.resources,
+            function (result, count, loadedCount) {
+                self._showProgress(count, loadedCount);
+            }, function () {
+                self.onLoadComplete();
+            });
     },
     _showProgress:function(count, loadedCount)
     {
        //to be override
     },
     onLoadComplete: function () {
+        if(flax.inputManager) {
+            flax.inputManager.removeFromParent();
+        }
         if (this.callback)
         {
             this.callback.apply(this.context);
@@ -109,22 +79,23 @@ flax._preloader = {
         this._inited = true;
 
         var self = this;
-        var winSize = flax.visibleRect;
-
+        var sw = flax.game.config.width;
+        var sh = flax.game.config.height;
         //logo
-        var centerPos = flax.p(winSize.width / 2, winSize.height / 2);
+        var centerPos = flax.p(sw / 2, sh / 2);
 
         //logo
         var loadingImg = flax.game.config["loading"];
         if(loadingImg && flax.isImageFile(loadingImg)){
             flax.loader.load(loadingImg, function(){
                 self._logo = new flax.Sprite(loadingImg);
+                self._logo.setAnchorPoint(0.5, 0.5);
                 self._logo.setPosition(centerPos);
-                self.addChild(self._logo, 10);
+                self.addChild(self._logo);
 
-                if(!flax.sys.isNative){
+                if(!flax.sys.isNative || flax.game.config.platform == "wechat"){
                     var fontSize = 16*(1 + self._logo.width/200);
-                    var pos = FRAMEWORK == "cocos" ? flax.pSub(centerPos, flax.p(0,  self._logo.height/2 + fontSize*0.6)) : flax.pAdd(centerPos, flax.p(0,  self._logo.height/2 + fontSize*0.6))
+                    var pos = flax.pAdd(centerPos, flax.p(0,  self._logo.height/2 + fontSize*0.6));
                     self.createLabel(pos, fontSize);
                     self.logoClick();
                 }
@@ -134,42 +105,19 @@ flax._preloader = {
         }
     },
     createLabel:function(pos, fontSize) {
-        if(FRAMEWORK == "cocos") {
-            var label = this._label = new cc.LabelTTF("Loading...", "Arial", fontSize || 18);
-            label.enableStroke(cc.color(51, 51, 51), 2);
-            label.setColor(cc.color(255, 255, 255));
-            label.setPosition(pos);
-            this.addChild(label, 10);
-        } else {
-            var label = new flax.Text("Loading...", {font: (fontSize || 18) + "px Arial", fill: 0xFFFFFF, stroke:0x333333, strokeThickness:2});
-            label.setPosition(pos);
-            label.setAnchorPoint(0.5, 0.5);
-            this.addChild(label);
-        }
+        var label = new flax.Text("Loading...", {fontFamily: (fontSize || 18) + "px Arial", fill: 0xFFFFFF, stroke:0x333333, strokeThickness:2});
+        label.setPosition(pos);
+        label.setAnchorPoint(0.5, 0.5);
+        this.addChild(label);
+        this._label = label;
     },
     logoClick:function(){
         //click logo to go
         var logo = this._logo;
-        if(FRAMEWORK == "cocos") {
-            var listener = cc.EventListener.create({
-                event: cc.EventListener.TOUCH_ONE_BY_ONE,
-                swallowTouches: false,
-                onTouchBegan:function(touch, event)
-                {
-                    if(flax.rectContainsPoint(flax.getBounds(logo, true), touch.getLocation())){
-                        flax.goHomeUrl();
-                        return true;
-                    }
-                    return false;
-                }
-            });
-            cc.eventManager.addListener(listener, this._logo);
-        } else {
-            logo.interactive = true;
-            logo.once(flax.isMobile ? "touchstart" : "mousedown", function () {
-                flax.goHomeUrl();
-            })
-        }
+        logo.interactive = true;
+        logo.once(flax.isMobile ? "touchstart" : "mousedown", function () {
+            flax.goHomeUrl();
+        })
     },
     onEnter: function () {
         var self = this;
@@ -192,11 +140,12 @@ flax._preloader = {
     _showProgress:function(count, loadedCount)
     {
         if(!this._label) return;
-        if(loadedCount != null) this._label.setString("Loading: " + (loadedCount + 1) + "/" + count);
-        else {
+        if(loadedCount != null) {
+            this._label.setString("Loading: " + (loadedCount + 1) + "/" + count);
+        } else {
 //            var percent = (loadedCount / count * 100) | 0;
 //            percent = Math.min(percent, 100);
-            this._label.setString("Loading: " + count + "%");
+            this._label.setString("Loading: " + count.toFixed(1) + "%");
         }
     }
 };

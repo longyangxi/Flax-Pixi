@@ -1,14 +1,5 @@
 var HEX_NUM = "0123456789ABCDEF";
 
-if(FRAMEWORK == "cocos") {
-    var COLOR_WHITE = cc.color(255, 255, 255);
-    var COLOR_BLACK = cc.color(0, 0, 0);
-    var COLOR_RED = cc.color(255, 0, 0);
-    var COLOR_GREEN = cc.color(0, 255, 0);
-    var COLOR_BLUE = cc.color(0, 0, 255);
-    var COLOR_GRAY = cc.color(128, 128, 128);
-}
-
 function hexToRgb(hex)
 {
     var h = (hex.charAt(0)=="#") ? hex.substring(1,7) : hex;

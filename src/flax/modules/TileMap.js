@@ -11,8 +11,9 @@ ALL_DIRECTONS1 = ["UP","DOWN","LEFT","RIGHT","RIGHT_UP","RIGHT_DOWN"];
 EIGHT_DIRECTIONS_VALUE  = {"UP":[0,1],"DOWN":[0,-1],"LEFT":[-1,0],"RIGHT":[1,0],"LEFT_UP":[-1,1],"RIGHT_UP":[1,1],"RIGHT_DOWN":[1,-1],"LEFT_DOWN":[-1,-1]};
 MAX_IN_TILE = 10;
 
-flax.TileMap = cc.Node.extend({
+flax.TileMap = flax.Container.extend({
     isHexagon:false,//if true, the tiles will layout like the bubble safari
+    reverseY: false,
     autoLayout:false,
     _allTilesIndex:null,
     _gridCanvas:null,
@@ -38,11 +39,12 @@ flax.TileMap = cc.Node.extend({
         this._objectsMap = null;
         this._objectsArr = null;
     },
-    init:function(tileWidth, tileHeight, mapWidth, mapHeight, inPixel)
+    init:function(tileWidth, tileHeight, mapWidth, mapHeight, inPixel, reverseY)
     {
         if(!tileWidth || !tileHeight) throw "Please set tileWdith and tileHeight!"
         this._tileWidth = tileWidth;
         this._tileHeight = tileHeight;
+        this.reverseY = reverseY === true;
         if(mapWidth && mapHeight) this.setMapSize(mapWidth, mapHeight, inPixel);
         this.retain();
     },
@@ -59,7 +61,7 @@ flax.TileMap = cc.Node.extend({
     },
     getMapSizePixel:function()
     {
-        var s = cc.size(this._tileWidth*this._mapWidth, this._tileHeight*this._mapHeight);
+        var s = {width: this._tileWidth*this._mapWidth, height: this._tileHeight*this._mapHeight};
         if(this.isHexagon) s.width += this._tileWidth*0.5;
         return s;
     },
@@ -143,7 +145,7 @@ flax.TileMap = cc.Node.extend({
     },
     showDebugTile:function(tx, ty, color){
         if(!flax.drawRect) {
-            flax.log("If you want to debug draw, please include flax/module/DebugDraw.js into your project!");
+            console.log("If you want to debug draw, please include flax/module/DebugDraw.js into your project!");
             return;
         }
         var pos = this.getTiledPosition(tx, ty);
@@ -200,6 +202,7 @@ flax.TileMap = cc.Node.extend({
         var tx = Math.floor((x0 - offset.x)/(this._tileWidth*sx));
         var ty = Math.floor((y0 - offset.y)/(this._tileHeight*sy));
         if(this.isHexagon && ty%2 != 0) tx = Math.floor((x0 - offset.x - (this._tileWidth*sx)*0.5)/(this._tileWidth*sx));
+        if(this.reverseY) ty = this._mapHeight - ty - 1;
         return {x:tx, y:ty};
     },
     getTiledPosition:function(tx, ty){
@@ -212,7 +215,7 @@ flax.TileMap = cc.Node.extend({
         var scale = flax.getScale(this, true);
         var sx = Math.abs(scale.x);
         var sy = Math.abs(scale.y);
-
+        if(this.reverseY) ty = this._mapHeight - ty - 1;
         var x = (tx + 0.5)*this._tileWidth*sx + offset.x;
         var y = (ty + 0.5)*this._tileHeight*sy + offset.y;
         if(this.isHexagon && ty%2 != 0) x += 0.5*this._tileWidth*sx;
@@ -256,6 +259,7 @@ flax.TileMap = cc.Node.extend({
     },
     isValideTile:function(tx, ty)
     {
+        if(this.reverseY) ty = this._mapHeight - ty - 1;
         return tx >= 0 && tx < this._mapWidth && ty >= 0 && ty < this._mapHeight;
     },
     snapToTile:function(sprite, tx, ty, autoAdd)
@@ -298,12 +302,6 @@ flax.TileMap = cc.Node.extend({
         if(this._objectsArr.indexOf(object) > -1) return;
         this._objectsArr.push(object);
         var objs = this._objectsMap[tx][ty];
-
-        //fix the update tile bug when in JSB
-        if(FRAMEWORK == "cocos" && !this._inUpdate && flax.sys.isNative) {
-            this._inUpdate = true;
-            cc.director.getScheduler().scheduleUpdateForTarget(this);
-        }
 
         if(!(flax.isDisplay(object))|| !this.autoLayout) {
             objs.push(object);
@@ -371,11 +369,6 @@ flax.TileMap = cc.Node.extend({
             if(i > -1){
                 this._objectsArr.splice(i, 1);
             }
-        }
-        //fix the update tile bug when in JSB
-        if(FRAMEWORK == "cocos" && this._inUpdate && flax.sys.isNative && this._objectsArr.length == 0) {
-            this._inUpdate = false;
-            cc.director.getScheduler().unscheduleUpdateForTarget(this);
         }
     },
     removeObjects:function(tx, ty)
@@ -682,7 +675,7 @@ flax._tileMaps = {};
 flax.getTileMap = function(id)
 {
     if(typeof flax._tileMaps[id] !== "undefined") return flax._tileMaps[id];
-    flax.log("The tileMap: "+id+" hasn't been defined, pls use flax.registerTileMap to define it firstly!");
+    console.log("The tileMap: "+id+" hasn't been defined, pls use flax.registerTileMap to define it firstly!");
     return null;
 };
 /**

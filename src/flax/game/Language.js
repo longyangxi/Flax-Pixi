@@ -40,11 +40,11 @@ flax.language = {
     },
     getStr:function(key, params){
         if(this._dict == null) {
-            flax.log("Warning: there is no language defined: "+this.current);
+            console.log("Warning: there is no language defined: "+this.current);
             return null;
         }
         var str = this._dict[key];
-        if(str == null) flax.log("Warning: there is no language string for key: " + key);
+        if(str == null) console.log("Warning: there is no language string for key: " + key);
         else if(params){
             for(var key in params){
                 var rk = "{" + key + "}";
@@ -58,7 +58,7 @@ flax.language = {
         this.current = lan;
         if(flax.game.config["languages"] && flax.game.config["languages"].length) flax.languages = flax.game.config["languages"];
         this.index = flax.languages.indexOf(lan);
-        if(this.index == -1) flax.log("Invalid language: " + lan);
+        if(this.index == -1) console.log("Invalid language: " + lan);
         if(flax.game.config["languageJson"]) this._toLoad = this._resPath(lan);
     },
     _resPath:function(lan){

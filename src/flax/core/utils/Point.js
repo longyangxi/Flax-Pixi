@@ -4,17 +4,9 @@
 
 flax.p = function(x, y)
 {
-    if(FRAMEWORK == "pixi"){
-        if(x === undefined) return new PIXI.Point(0, 0);
-        if(y === undefined) return new PIXI.Point(x.x, x.y);
-        return new PIXI.Point(x, y);
-    }else {
-        if (x === undefined)
-            return {x: 0, y: 0};
-        if (y === undefined)
-            return {x: x.x, y: x.y};
-        return {x: x, y: y};
-    }
+    if(x === undefined) return new PIXI.Point(0, 0);
+    if(y === undefined) return new PIXI.Point(x.x, x.y);
+    return new PIXI.Point(x, y);
 }
 
 /**

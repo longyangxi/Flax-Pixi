@@ -198,76 +198,31 @@ flax._buttonDefine = {
             if(!flax.isFlaxSprite(child)) continue;
             if(this._playChildrenOnState) {
                 child.autoPlayChildren = true;
-                child.play();
+                if(child.play) child.play();
             }else{
                 child.autoPlayChildren = false;
-                child.stop();
+                if(child.stop) child.stop();
             }
         }
     },
     _addListeners: function () {
-        if(FRAMEWORK == "cocos") {
-            var self = this;
-            if(flax.inputManager) {
-                flax.inputManager.addListener(this, this._onPress, InputType.press, this);
-                flax.inputManager.addListener(this, this._onClick, InputType.click, this);
-            } else {
-                var touchListener = cc.EventListener.create({
-                    event: cc.EventListener.TOUCH_ONE_BY_ONE,
-                    swallowTouches: false,
-                    onTouchBegan:function(touch, event)
-                    {
-                        if(!flax.ifTouchValid(self, touch)) return false;
-                        if(flax.inputManager && !flax.inputManager.ifNotMasked(self, touch.getLocation())) return false;
-                        self._onPress(touch, event);
-                        return true;
-                    },
-                    onTouchEnded:function(touch, event)
-                    {
-                        if(flax.ifTouched(self, touch.getLocation())) {
-                            self._onClick(touch, event);
-                        }
-                    },
-                    onTouchMoved:function(touch, event) { self._onMove(touch, event); }
-                });
-                cc.eventManager.addListener(touchListener, this);
-            }
-
-            //listen the mouse move event on PC
-            if(!flax.isMobile){
-                var mouseListener = cc.EventListener.create({
-                    event: cc.EventListener.MOUSE,
-                    onMouseMove:function(event){
-                        if(event.getButton() != 0){
-                            var evt = {target:self, currentTarget:self};
-                            if(self.isMouseEnabled()) self._onMove(event, evt);
-                        }
-                    }
-                })
-                cc.eventManager.addListener(mouseListener, this);
-            }
-        } else if (FRAMEWORK == "pixi") {
-            this.interactive = true;
-            this.buttonMode = true;
-            var isMobile = flax.isMobile;
-            this.on(isMobile ? "touchstart" : "mousedown", this._onPress, this);
-            this.on(isMobile ? "tap" : "click", this._onClick, this);
-            if(!isMobile) {
-                this.on("mouseover", this._onOver, this);
-                this.on("mouseout", this._onOut, this);
-            }
+        this.interactive = true;
+        this.buttonMode = true;
+        var isMobile = flax.isMobile;
+        this.on(isMobile ? "touchstart" : "mousedown", this._onPress, this);
+        this.on(isMobile ? "tap" : "click", this._onClick, this);
+        if(!isMobile) {
+            this.on("mouseover", this._onOver, this);
+            this.on("mouseout", this._onOut, this);
         }
     },
     _removeListeners: function () {
-        if(FRAMEWORK == "cocos") cc.eventManager.removeListener(this);
-        else if(FRAMEWORK == "pixi") {
-            var isMobile = flax.isMobile;
-            this.removeListener(isMobile ? "touchstart" : "mousedown", this._onPress);
-            this.removeListener(isMobile ? "tap" : "click", this._onClick);
-            if(!isMobile) {
-                this.removeListener("mouseover", this._onOver);
-                this.removeListener("mouseout", this._onOut);
-            }
+        var isMobile = flax.isMobile;
+        this.removeListener(isMobile ? "touchstart" : "mousedown", this._onPress);
+        this.removeListener(isMobile ? "tap" : "click", this._onClick);
+        if(!isMobile) {
+            this.removeListener("mouseover", this._onOver);
+            this.removeListener("mouseout", this._onOut);
         }
     }
 };

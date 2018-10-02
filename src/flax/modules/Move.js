@@ -36,7 +36,7 @@ flax.Module.Move = {
      * Move to a new position within duration time
      * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
      * */
-    moveTo:function(pos, duration, callBack, callContext) {
+    moveTo:function(duration, pos, callBack, callContext) {
         this.inRandom = false;
         this._targetPos = pos;
         this._callBack = callBack;
@@ -59,7 +59,7 @@ flax.Module.Move = {
      * Move to a new position with speed
      * Note: If you use cc.moveTo in JSB, the setPosition function in js can not be called, use this instead of
      * */
-    moveToBySpeed:function(pos, speed, callBack, callContext) {
+    moveToBySpeed:function(speed, pos, callBack, callContext) {
         this.inRandom = false;
         this._targetPos = pos;
         this._callBack = callBack;

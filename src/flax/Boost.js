@@ -6,7 +6,7 @@
  * @license      MIT License: {@link http:http://mit-license.org/}
  */
 
-function loadJsonSync(url) {
+var loadJsonSync = function (url, callback) {
     var http = new XMLHttpRequest();
     http.open("GET", url, false);
     if (/msie/i.test(navigator.userAgent) && !/opera/i.test(navigator.userAgent)) {
@@ -15,54 +15,61 @@ function loadJsonSync(url) {
     } else {
         if (http.overrideMimeType) http.overrideMimeType("text\/plain; charset=utf-8");
     }
-    http.send(null);
-    if (!http.readyState === 4 || http.status !== 200) {
-        return null;
-    }
-    return JSON.parse(http.responseText);
-}
+    http.onreadystatechange = function () {
+        if(http.readyState == 4){
+            if(http.status == 200){
+                var response = http.responseText;
+                response = response.replace(/\\/g,"");
+                try{
+                    response = JSON.parse(response);
+                } catch (e) {
 
-function loadJsList(urls, dir) {
-    for(var i = 0; i< urls.length; i++) {
-        var script = document.createElement("script");
-        script.async = false;
-        script.src = (dir || "") + urls[i];
-        document.body.appendChild(script);
-    }
-}
+                }
+                if(callback){
+                    callback(response);
+                }
+            }else{
 
-function doBoost() {
-    var userConfig = loadJsonSync("project.json");
-    if(userConfig['frameWork']) FRAMEWORK =  userConfig['frameWork'];
-    else FRAMEWORK = "pixi";
-    var flaxDir = userConfig['flaxDir'] || "src/flax";
-    var modules = userConfig['modules'];
-
-    var moduleConfig = loadJsonSync(flaxDir + "/" + "moduleConfig.json");
-
-    for(var i = 0; i < modules.length; i++) {
-        var moduleName = modules[i];
-        var module = moduleConfig['modules'][moduleName];
-        if(module) {
-            var dir = flaxDir + "/";
-            if(module['base']) loadJsList(module['base'], dir);
-            if(module[FRAMEWORK + "_base"]) loadJsList(module[FRAMEWORK + "_base"], dir);
-            if(module['common']) loadJsList(module['common'], dir);
-            if(module[FRAMEWORK]) loadJsList(module[FRAMEWORK], dir);
+            }
+        }else{
+            //cc.log(xhr.status + ", " + xhr.readyState)
         }
     }
-
-    loadJsList(userConfig['jsList']);
-    loadJsList(['main.js']);
+    http.send(null);
 }
 
-/**
- * 为了让cordova可以启动游戏，需要安装httpd的插件，在游戏运行时启动
- * 参见：https://github.com/floatinghotpot/cordova-httpd
- * */
-if(typeof cordova == "undefined") {
-    doBoost();
-} else {
-    loadJsList(["src/flax/httpd.js"]);
-    document.addEventListener("httpdready", doBoost, false);
+var flaxDir;
+
+var loadJsList = function (urls, isFlax) {
+    for(var i = 0; i< urls.length; i++) {
+        if(typeof require != "undefined") {
+            require(urls[i]);
+        } else {
+            var script = document.createElement("script");
+            script.async = false;
+            script.src = (isFlax ? flaxDir + "/" : "") + urls[i];
+            document.body.appendChild(script);
+        }
+    }
 }
+
+loadJsonSync("project.json", function(userConfig) {
+    flaxDir = userConfig['flaxDir'] || "src/flax";
+    var modules = userConfig['modules'];
+    loadJsonSync(flaxDir + "/" + "moduleConfig.json", function(moduleConfig) {
+        var engineName = "pixi";
+        for(var i = 0; i < modules.length; i++) {
+            var moduleName = modules[i];
+            var module = moduleConfig['modules'][moduleName];
+            if(module) {
+                if(module['base']) loadJsList(module['base'], true);
+                if(module[engineName + "_base"]) loadJsList(module[engineName + "_base"], true);
+                if(module['common']) loadJsList(module['common'], true);
+                if(module[engineName]) loadJsList(module[engineName], true);
+            }
+        }
+
+        loadJsList(userConfig['jsList']);
+        loadJsList(['main.js']);
+    });
+});

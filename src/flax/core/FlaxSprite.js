@@ -26,7 +26,7 @@ flax.Anchor = flax.Class.extend({
 });
 
 flax._sprite = {
-    __instanceId:null,
+    //__instanceId:null,
     __mOnFuctions:null,
     onAnimationOver:null,
     onSequenceOver:null,
@@ -46,7 +46,7 @@ flax._sprite = {
     assetID:null,
     clsName:"flax.FlaxSprite",
     playing:false,
-    mask:null,
+    //mask:null,
     _prevFrame:-1,
     _labelFrames:null,
     _frameSounds:null,
@@ -73,13 +73,8 @@ flax._sprite = {
     ctor:function(assetsFile, assetID){
         if(this.clsName == "flax.FlaxSprite") throw  "flax.FlaxSprite is an abstract class, please use flax.Animator or flax.MovieClip!";
         if(!assetsFile || !assetID) throw "Please set assetsFile and assetID to me!";
-        if(FRAMEWORK == "cocos"){
-            if(this instanceof cc.SpriteBatchNode) cc.SpriteBatchNode.prototype.ctor.call(this, flax.path.changeExtname(assetsFile, ".png"));
-            else this._super();
-        }else{
-            this._super();
-        }
-        if(FRAMEWORK != "cocos") this.__instanceId = flax.getInstanceId();
+        this._super();
+        //this.__instanceId = flax.getInstanceId();
         this.reset();
         this.setSource(assetsFile, assetID);
     },
@@ -213,16 +208,16 @@ flax._sprite = {
         if(!this.define) return null;
 
         if(!this.define['anchors']) {
-            flax.log(this.assetID+": there is no any anchor!");
+            console.log(this.assetID+": there is no any anchor!");
             return null;
         }
         if(this.define['anchors'][anchorName] == null) {
-            flax.log(this.assetID+": there is no anchor named "+anchorName);
+            console.log(this.assetID+": there is no anchor named "+anchorName);
             return null;
         }
         if(node == null) throw "Node can't be null!";
         if(this._anchorBindings.indexOf(node) > -1) {
-            flax.log(this.assetID+": anchor has been bound, "+anchorName);
+            console.log(this.assetID+": anchor has been bound, "+anchorName);
             return null;
         }
         if(alwaysBind !== false) this._anchorBindings.push(node);
@@ -333,7 +328,7 @@ flax._sprite = {
         if(!anim || anim.length == 0) return false;
         if(this._subAnims == null || this._subAnims.indexOf(anim) == -1){
             if(!this.__isButton) {
-                flax.log("There is no animation named: " + anim);
+                console.log("There is no animation named: " + anim);
             }
             return false;
         }
@@ -361,7 +356,7 @@ flax._sprite = {
             if(lbl == null){
                 var has = this._setSubAnim(frameOrLabel, true);
                 if(!has) {
-                    flax.log("There is no animation named: " + frameOrLabel);
+                    console.log("There is no animation named: " + frameOrLabel);
                     this.play();
                 }
                 return has;
@@ -376,7 +371,7 @@ flax._sprite = {
         }else{
             if(!this.isValideFrame(frameOrLabel))
             {
-                flax.log("The frame: "+frameOrLabel +" is out of range!");
+                console.log("The frame: "+frameOrLabel +" is out of range!");
                 return false;
             }
             this._loopStart = 0;
@@ -404,7 +399,7 @@ flax._sprite = {
             if(lbl == null){
                 var has = this._setSubAnim(frameOrLabel, false);
                 if(!has && !this.__isButton) {
-                    flax.log("There is no animation named: " + frameOrLabel);
+                    console.log("There is no animation named: " + frameOrLabel);
                 }
                 return has;
             }
@@ -414,7 +409,7 @@ flax._sprite = {
 
         if(!this.isValideFrame(frameOrLabel))
         {
-            flax.log("The frame: "+frameOrLabel +" is out of range!");
+            console.log("The frame: "+frameOrLabel +" is out of range!");
             return false;
         }
         this.updatePlaying(false);
@@ -545,6 +540,14 @@ flax._sprite = {
             if(frameSound && flax.playSound) flax.playSound(frameSound);
         }
     },
+    setColor: function(color) {
+        if(typeof color == "string") {
+            color = color.replace("#", "0x");
+            color = parseInt(color);
+        }
+        this.tint = color;
+        return color;
+    },
     doRenderFrame:function(frame)
     {
         //to be implemented
@@ -568,7 +571,7 @@ flax._sprite = {
     {
         if(anchor == null) return;
 
-        if(FRAMEWORK == "cocos" || anchor.zIndex >= 0) {
+        if(anchor.zIndex >= 0) {
             node.zIndex = anchor.zIndex;
         }
 
@@ -577,17 +580,11 @@ flax._sprite = {
         //handle the skew
         if(anchor.skewX != 0 || anchor.skewY != 0) {
             //skew in cocos
-            if(FRAMEWORK == "cocos") {
-                node.setRotationX(anchor.skewX);
-                node.setRotationY(anchor.skewY);
-                //skew in pixi
-            }else if(FRAMEWORK == "pixi") {
-                if(node.skew){
-                    node.skew.x = anchor.skewX*DEGREE_TO_RADIAN;
-                    node.skew.y = anchor.skewY*DEGREE_TO_RADIAN;
-                }else{
-                    flax.log("***Warning: this version of pixi has not implemented the skew!")
-                }
+            if(node.skew){
+                node.skew.x = anchor.skewX*DEGREE_TO_RADIAN;
+                node.skew.y = anchor.skewY*DEGREE_TO_RADIAN;
+            }else{
+                console.log("***Warning: this version of pixi has not implemented the skew!")
             }
         } else {
             node.setRotation(anchor.rotation);
@@ -607,15 +604,31 @@ flax._sprite = {
         }
         this.renderFrame(this.currentFrame, true);
 
-        if(this.mask && !this.mask.__inited) {
-            this.mask.__inited = true;
-            var ap = this.getAnchorPointInPoints();
-            var stencil = this.mask.stencil;
-            stencil.x = stencil.__originPos.x + this.x - ap.x;
-            stencil.y = stencil.__originPos.y + this.y - ap.y;
-        }
-        //todo
         this._super();
+
+        var platform = flax.game.config.platform;
+        if(this.hasLabel(platform)) this.gotoAndStop(platform);
+
+        //if(this.mask && !this.mask.__inited) {
+        //    this.mask.__inited = true;
+        //    var ap = this.getAnchorPointInPoints();
+        //    var stencil = this.mask.stencil;
+        //    stencil.x = stencil.__originPos.x + this.x - ap.x;
+        //    stencil.y = stencil.__originPos.y + this.y - ap.y;
+        //}
+        if(this.name) {
+            var nameArr = this.name.split("__");
+            if(nameArr.length > 0) {
+                var type = nameArr[0];
+                var aName = nameArr[1];
+                //mask
+                if(type == "mask") {
+                    if(this.parent[aName]) {
+                        this.parent[aName].mask = this;
+                    }
+                }
+            }
+        }
     },
     onExit:function()
     {
@@ -623,10 +636,10 @@ flax._sprite = {
 
         this._destroyed = true;
 
-        if(flax.inputManager){
-            flax.inputManager.removeListener(this);
-            if(this.__isInputMask) flax.inputManager.removeMask(this);
-        }
+        //if(flax.inputManager){
+        //    flax.inputManager.removeListener(this);
+        //    if(this.__isInputMask) flax.inputManager.removeMask(this);
+        //}
         if(this.__anchor__ && this.parent.unbindAnchor){
             this.parent.unbindAnchor(this.__anchor__, false);
             delete this.__anchor__;
@@ -663,7 +676,7 @@ flax._sprite = {
         }
 
         this.define = null;
-        this.mask = null;
+        //this.mask = null;
         this._labelFrames = null;
         this._labelSounds = null;
         this._subAnims = null;
@@ -674,54 +687,11 @@ flax._sprite = {
     },
     _updateLaguage:function(){
         if(!flax.language) return;
-        this._isLanguageElement = (flax.language.index > -1 && this.name && this.name.indexOf("label__") == 0);
+        if(!this._isLanguageElement) this._isLanguageElement = (flax.language.index > -1 && this.name && this.name.indexOf("label__") == 0);
         if(this._isLanguageElement){
             if(!this.gotoAndStop(flax.language.index)){
                 this.gotoAndStop(0);
             }
-        }
-    },
-    //setPosition:function(pos, yValue)
-    //{
-        //var dirty = false;
-        //var _x = this.getPositionX();
-        //var _y = this.getPositionY();
-        //var dx = 0;
-        //var dy = 0;
-        //if(yValue === undefined) {
-        //    dx = pos.x - _x;
-        //    dy = pos.y - _y;
-        //    dirty = (dx != 0 || dy != 0);
-        //    if(dirty) {
-        //        if(FRAMEWORK == "cocos") cc_sprite_set_position.call(this, pos);
-        //        else this._super(pos);
-        //    }
-        //}else {
-        //    dx = pos - _x;
-        //    dy = yValue - _y;
-        //    dirty = (dx != 0 || dy != 0);
-        //    if(dirty) {
-        //        if(FRAMEWORK == "cocos") cc_sprite_set_position.call(this, pos, yValue);
-        //        else this._super(pos, yValue);
-        //    }
-        //}
-        //this._super(pos, yValue)
-        //this.onNewPosition(dx, dy);
-        //if(!dirty || !this.parent) return;
-        //flax.callModuleFunction(this, "onPosition");
-    //},
-    //setPositionX:function (x) {
-    //    this.setPosition(x, this.getPositionY());
-    //},
-    //setPositionY:function (y) {
-    //    this.setPosition(this.getPositionX(), y);
-    //},
-    //onNewPosition: function (dx, dy) {
-    //},
-    setLocalZOrder: function (zIndex) {
-        cc.Node.prototype.setLocalZOrder.call(this, zIndex);
-        if(this.mask) {
-            this.mask.setLocalZOrder(zIndex);
         }
     },
     destroy:function()
@@ -743,9 +713,9 @@ flax._sprite = {
             pool.recycle(this);
         }
         //todo, handlle destroy in pixi
-        if(FRAMEWORK == "cocos") this.removeFromParent();
-        else this._super();
-        //this.removeFromParent()
+        //if(FRAMEWORK == "cocos") this.removeFromParent();
+        //else this._super();
+        this.removeFromParent()
         this.autoRecycle = false;
     },
     /**
@@ -835,29 +805,10 @@ _defineGT(flax.FlaxSprite.prototype);
 
 /////////////////////////////////////////////////////////////
 
-if(FRAMEWORK == "cocos"){
-    var cc_sprite_set_position = cc.Sprite.prototype.setPosition;
-    //fix the setString bug in JSB 3.13
-    cc.LabelTTF.prototype._setString = cc.LabelTTF.prototype.setString;
-    cc.LabelTTF.prototype.setString = function (str) {
-        this._setString('' + str)
-    }
-
-    flax.FlaxSpriteBatch = flax.SpriteBatchNode.extend(flax._sprite);
-    flax.FlaxSpriteBatch.create = function(assetsFile, assetID)
-    {
-        var tl = new flax.FlaxSpriteBatch(assetsFile, assetID);
-        tl.clsName = "flax.FlaxSpriteBatch";
-        return tl;
-    };
-    window['flax']['FlaxSpriteBatch'] = flax.FlaxSpriteBatch;
-    _defineGT(flax.FlaxSpriteBatch.prototype);
-}
-
 /**
  * FlaxContainer is for MovieClip to extend
  * */
-flax.FlaxContainer = (FRAMEWORK == "cocos" ? cc.Node : flax.Container).extend(flax._sprite);
+flax.FlaxContainer = flax.Container.extend(flax._sprite);
 flax.FlaxContainer.create = function(assetsFile, assetID)
 {
     var tl = new flax.FlaxContainer(assetsFile, assetID);

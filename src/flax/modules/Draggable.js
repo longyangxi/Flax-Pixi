@@ -2,26 +2,26 @@
  * Created by long on 14-7-10.
  */
 
-var flax  = flax || {};
+var flax = flax || {};
 
-if(!flax.Module) flax.Module = {};
+if (!flax.Module) flax.Module = {};
 
 flax.Module.Draggable = {
-    xDraggable:true,
-    yDraggable:true,
-    dragEnabled:true,
-    tweenEnabled:true,
-    _boundsView:null,
-    _viewRect:null,
-    _inDragging:false,
-    _dragSpeed:null,
-    _lastPos:null,
-    _anchorPos:null,
-    _tempPos:null,
-    "onEnter":function() {
+    xDraggable: true,
+    yDraggable: true,
+    dragEnabled: true,
+    tweenEnabled: true,
+    _boundsView: null,
+    _viewRect: null,
+    _inDragging: false,
+    _dragSpeed: null,
+    _lastPos: null,
+    _anchorPos: null,
+    _tempPos: null,
+    "onEnter": function() {
 
         var view = this.getCollider("view");
-        if(view == null) view = this.getCollider("mask");
+        if (view == null) view = this.getCollider("mask");
         this._boundsView = view;
 
         this._dragSpeed = flax.p();
@@ -32,7 +32,7 @@ flax.Module.Draggable = {
         flax.inputManager.addListener(this, this._stopDrag, InputType.up, this);
 
     },
-    "onExit":function() {
+    "onExit": function() {
         this.xDraggable = true;
         this.yDraggable = true;
         this.dragEnabled = true;
@@ -63,18 +63,18 @@ flax.Module.Draggable = {
     //        this.setPosition(newPos);
     //    }
     //},
-    _startDrag:function(touch, event){
-        if(!this.dragEnabled) return;
+    _startDrag: function(event) {
+        if (!this.dragEnabled) return;
         this._inDragging = true;
-        this._lastPos = touch.getLocation();
-        if(this.onStartDrag) this.onStartDrag();
+        this._lastPos = flax.mousePos;
+        if (this.onStartDrag) this.onStartDrag();
         this._stopTween();
     },
-    _drag:function(touch, event){
+    _drag: function(event) {
 
-        if(!this._inDragging) return;
+        if (!this._inDragging) return;
 
-        var newPos = touch.getLocation();
+        var newPos = flax.mousePos;
         var deltaX = newPos.x - this._lastPos.x;
         var deltaY = newPos.y - this._lastPos.y;
 
@@ -82,17 +82,17 @@ flax.Module.Draggable = {
 
         this._lastPos = newPos;
     },
-    _stopDrag:function(touch, event){
+    _stopDrag: function(event) {
         this._inDragging = false;
-        if(this.onStopDrag)this.onStopDrag();
-        if(this.tweenEnabled) this._startTween();
+        if (this.onStopDrag) this.onStopDrag();
+        if (this.tweenEnabled) this._startTween();
     },
-    getMaxDragSpeed: function () {
+    getMaxDragSpeed: function() {
         return 100;
     },
-    dragBy: function (deltaX, deltaY) {
+    dragBy: function(deltaX, deltaY) {
 
-        if(deltaX == 0 && deltaY == 0) return false;
+        if (deltaX == 0 && deltaY == 0) return false;
 
         var maxSpeed = this.getMaxDragSpeed();
 
@@ -102,29 +102,29 @@ flax.Module.Draggable = {
         this._dragSpeed.x = deltaX;
         this._dragSpeed.y = deltaY;
 
-        if(!this._viewRect) this._viewRect = this._boundsView ? this._boundsView.getBounds(true) : null;
+        if (!this._viewRect) this._viewRect = this._boundsView ? this._boundsView.getBounds(true) : null;
 
-        if(this._viewRect) {
+        if (this._viewRect) {
             var rect = this.getViewRect ? this.getViewRect(true) : this.getBounds(true);
             rect.x += deltaX;
             rect.y += deltaY;
 
-            if(rect.x > this._viewRect.x && deltaX > 0) {
+            if (rect.x > this._viewRect.x && deltaX > 0) {
                 deltaX -= rect.x - this._viewRect.x;
-                if(deltaX < 0) deltaX = 0;
+                if (deltaX < 0) deltaX = 0;
             }
-            if(rect.x + rect.width < this._viewRect.x + this._viewRect.width && deltaX < 0) {
+            if (rect.x + rect.width < this._viewRect.x + this._viewRect.width && deltaX < 0) {
                 deltaX -= rect.x + rect.width - this._viewRect.x - this._viewRect.width;
-                if(deltaX > 0) deltaX = 0;
+                if (deltaX > 0) deltaX = 0;
             }
 
-            if(rect.y > this._viewRect.y && deltaY > 0) {
+            if (rect.y > this._viewRect.y && deltaY > 0) {
                 deltaY -= rect.y - this._viewRect.y;
-                if(deltaY < 0) deltaY = 0;
+                if (deltaY < 0) deltaY = 0;
             }
-            if(rect.y + rect.height < this._viewRect.y + this._viewRect.height && deltaY < 0) {
+            if (rect.y + rect.height < this._viewRect.y + this._viewRect.height && deltaY < 0) {
                 deltaY -= rect.y + rect.height - this._viewRect.y - this._viewRect.height;
-                if(deltaY > 0) deltaY = 0;
+                if (deltaY > 0) deltaY = 0;
             }
         }
 
@@ -133,15 +133,15 @@ flax.Module.Draggable = {
         newPos.x = pos.x;
         newPos.y = pos.y;
 
-        if(this.xDraggable) {
+        if (this.xDraggable) {
             newPos.x += deltaX;
         }
-        if(this.yDraggable) {
+        if (this.yDraggable) {
             newPos.y += deltaY;
         }
 
         //if the position can draggable, change the pos directly
-        if(this.restrainDragPos) {
+        if (this.restrainDragPos) {
             this.restrainDragPos(newPos, deltaX, deltaY);
         }
 
@@ -151,22 +151,22 @@ flax.Module.Draggable = {
         deltaY = newPos.y - pos.y;
         var posChanged = deltaX != 0 || deltaY != 0;
 
-        if(posChanged && this.onNewPosition) {
+        if (posChanged && this.onNewPosition) {
             this.onNewPosition(deltaX, deltaY);
         }
         return posChanged;
     },
-    _startTween: function () {
+    _startTween: function() {
         this.schedule(this._doTween, flax.frameInterval);
     },
-    _stopTween: function () {
+    _stopTween: function() {
         this.unschedule(this._doTween);
     },
-    _doTween: function (delta) {
+    _doTween: function(delta) {
         this._dragSpeed.x *= 0.9;
         this._dragSpeed.y *= 0.9;
         var speed = flax.pLength(this._dragSpeed);
-        if(speed < 1 || !this.dragBy(this._dragSpeed.x, this._dragSpeed.y)) {
+        if (speed < 1 || !this.dragBy(this._dragSpeed.x, this._dragSpeed.y)) {
             this._stopTween();
         }
     }

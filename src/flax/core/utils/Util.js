@@ -27,15 +27,56 @@ flax.isWebGLSupported = function ()
     }
 }
 
-flax.getGameScale = function () {
+flax._screenSize = {x: 0, y: 0};
+flax._realScreenSize = {x: 0, y: 0};
+
+flax.getScreenSize = function() {
+    if(flax._screenSize.x > 0 && flax.sys.isMobile) return flax._screenSize;
+    //var screenWidth = flax.sys.isMobile ?  window.screen.width :  window.innerWidth;
+    //var screenHeight = flax.sys.isMobile ? window.screen.height : window.innerHeight;
+    //TODO, in mobile the real width is window.innerWidth and window.innerHeight
+    //TODO, screen.width and screen height is real the device's pixel size, but not correct for game renderer
+    var screenWidth = window.innerWidth;
+    var screenHeight = window.innerHeight;
+
+    flax._screenSize.x = screenWidth;
+    flax._screenSize.y = screenHeight;
+
+    return flax._screenSize;
+}
+
+flax.getRealScreenSize = function() {
+    if(flax._realScreenSize.x > 0 && flax.sys.isMobile) return flax._realScreenSize;
+    var pixilRatio = 1.0;//window.devicePixelRatio;
+    //window.devicePixelRatio if only correct for wechat games
+    if(flax.game.config.platform == "wechat") {
+        pixilRatio = window.devicePixelRatio;
+    } else {
+        // if(flax.sys.isMobile && flax.sys.os == flax.sys.OS_IOS) {
+        //     pixilRatio = window.devicePixelRatio;
+        //     if(pixilRatio > 2) pixilRatio = 2;
+        // }
+    }
+
+    var size = flax.getScreenSize();
+
+    flax._realScreenSize.x = size.x * pixilRatio;
+    flax._realScreenSize.y = size.y * pixilRatio;
+
+    return flax._realScreenSize;
+}
+
+flax.getGameScale = function (size) {
 
     var sx = 1.0;
     var sy = 1.0;
 
-    var size = flax.designedStageSize;
+    var screenSize = flax.getRealScreenSize();
 
-    var ws = window.innerWidth/size.width;
-    var hs = window.innerHeight/size.height;
+    if(!size) size = flax.designedStageSize;
+
+    var ws =  screenSize.x / size.width;
+    var hs = screenSize.y / size.height;
 
     switch(flax.resolutionPolicy){
         case flax.ResolutionPolicy.EXACT_FIT:
@@ -51,21 +92,20 @@ flax.getGameScale = function () {
             if(hs < ws) sx = sy = hs;
             break;
         case flax.ResolutionPolicy.FIXED_HEIGHT:
-            //todo
+            sx = sy = hs;
             break;
         case flax.ResolutionPolicy.FIXED_WIDTH:
-            //todo
+            sx = sy = ws;
             break;
         case flax.ResolutionPolicy.UNKNOWN:
-            //todo
             break;
     }
+    //console.log("update game scale: ", screenSize.x, screenSize.y, size.width, size.height, sx, sy, size.width*sx, size.height*sy);
     return {x: sx, y: sy};
 }
 
 flax.isDisplay = function (target) {
-    if(FRAMEWORK == "cocos") return target instanceof cc.Node;
-    if(FRAMEWORK == "pixi") return target instanceof PIXI.DisplayObject;
+    return target instanceof PIXI.DisplayObject;
 }
 
 flax.isFlaxDisplay = function(target)
@@ -139,8 +179,11 @@ flax.isSoundFile = function(path)
  * */
 flax.getUrlVars = function() {
     var vars = {};
-    if(flax.sys.isNative) return vars;
-    var query = window.location.search.substring(1);
+    try{
+        var query = window.location.search.substring(1);
+    } catch(e) {
+        return vars;
+    }
     var varsArr = query.split("&");
     for (var i = 0; i < varsArr.length; i++) {
         var pair = varsArr[i].split("=");
@@ -199,7 +242,7 @@ flax.ifTouched = function(target, pos)
     if(!(flax.isDisplay(target))) return false;
 
     //if its flax.FlaxSprite
-    if(target.mainCollider && target.mainCollider.containsPoint){
+    if(target.mainCollider){
         return target.mainCollider.containsPoint(pos);
     }
     var r = flax.getBounds(target,true);
@@ -228,4 +271,84 @@ flax.ifTouchValid = function(target, touch)
     if(target.isMouseEnabled && target.isMouseEnabled() === false) return false;
     if(pos && !flax.ifTouched(target, pos)) return false;
     return true;
+}
+
+/**
+ * 在index.html中不设置 <meta name="viewport" content="width=device-width, minimal-ui=true, user-scalable=no">
+ *  的情况下，输入文本框和iframe都会出现严重缩小的问题，此函数专用于修正这个问题
+ *  而上述meta设置会导致游戏画面缩小看不清
+ * */
+flax.fixHtmlElementToScreen = function(element, originWidth, originHeight, marginX, marginY, offsetX, offsetY) {
+
+    if(!originWidth) originWidth = element.offsetWidth;
+    if(!originHeight) originHeight = element.offsetHeight;
+    if(!marginX) marginX = 100;
+    if(!marginY) marginY = 100;
+    if(!offsetX) offsetX = 0;
+    if(!offsetY) offsetY = 0;
+
+    var screenSize = flax.getScreenSize();
+    var maxWidth = screenSize.x - 2 * marginX;
+    var maxHeight = screenSize.y - 2 * marginY;
+
+    var scale = Math.min(maxWidth / originWidth, maxHeight / originHeight);
+
+    if(flax.isSetDeviceViewPort()) {
+        scale = 1.0;
+    }
+
+    var newLeftPos = screenSize.x / 2 + offsetX;
+    var newTopPos =  screenSize.y / 2 + offsetY;
+
+    var styleObj = flax.htmlStyleToObject(element);
+
+    var scaleStyle =
+        "-ms-transform scale($);" +
+        "-moz-transform: scale($);" +
+        "-webkit-transform: scale($);" +
+        "transform: scale($);"
+
+    scaleStyle = scaleStyle.replace(/\$/g, scale);
+
+    var styleStr = flax.mergeHtmlStyleToStr(styleObj, scaleStyle);
+
+    element.style = styleStr + 'position:absolute;left:' + newLeftPos + 'px;top:' + newTopPos + 'px;';
+
+    console.log(styleStr)
+
+    return true;
+}
+
+flax.isSetDeviceViewPort = function() {
+    var viewPortMeta = document.getElementById("flaxViewPort");
+    if(viewPortMeta && viewPortMeta.content && viewPortMeta.content.indexOf("device-width") > -1) {
+        return true;
+    }
+    return false;
+}
+
+flax.htmlStyleToObject = function(element) {
+    var originCssText = element.style.cssText;
+    originCssText = originCssText.replace(/\s/g, "");
+    var styleObj = {};
+    var arr = originCssText.split(";");
+    for(var i = 0; i < arr.length; i++) {
+        var arr0 = arr[i].split(":");
+        styleObj[arr0[0]] = arr0[1];
+    }
+    return styleObj;
+}
+
+flax.mergeHtmlStyleToStr = function(styleObj, newStyleStr) {
+    var arr = newStyleStr.split(";");
+    for(var i = 0; i < arr.length; i++) {
+        var arr0 = arr[i].split(":");
+        styleObj[arr0[0]] = arr0[1];
+    }
+
+    var styleStr = "";
+    for(var k in styleObj) {
+        styleStr = styleStr + k + ": " + styleObj[k] + ";";
+    }
+    return styleStr;
 }
