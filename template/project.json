@@ -1,0 +1,36 @@
+{
+    "version": 1.01,
+    "width": 750,
+    "height": 1334,
+    "stageAlign": 0,
+    "landscape": false,
+    "name": "Hello Flax",
+    "name_en": "Hello Flax",
+    "gameId": "com.longames.flax",
+    "rotateImg": "res/rotate.png",
+    "resUrl": "",
+    "platform": "web",
+    "language": "en",
+    "languageJson": false,
+    "loading": "res/logo.png",
+    "preloader": null,
+    "reyun": "ebbf81f157ea67be988ff12914adc957",
+    "debugMode": 0,
+    "showFPS": false,
+    "frameRate": 60,
+    "renderMode": 0,
+    "frameWork": "pixi",
+    "flaxDir": "src/flax",
+    "modules": ["core", "game", "extras", "modules", "physics", "filters", "particle", "sdk"],
+    "jsList": [
+        "src/resource.js",
+        "src/simpleScene.js"
+    ],
+    "sounds": {
+        "path": "res/music/",
+        "autoPlayMusic": null,
+        "manifest": {
+            "menu": "menu.mp3"
+        }
+    }
+}

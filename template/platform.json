@@ -1,0 +1,23 @@
+{
+    "ios": {
+        "appid": "",
+        "banner": "ca-app-pub-5842347971178507/8107938002",
+        "vedio": "ca-app-pub-5842347971178507/7635937679",
+        "inter": "ca-app-pub-5842347971178507/4686645276"
+    },
+    "fb": {
+        "appid": "607111099688547",
+        "video": "607111099688547_626871304379193",
+        "inter": "607111099688547_607876132945377",
+        "shareImg": "https://lottery.etdogs.com/miniGameMaster/config/physicBall.jpg",
+        "shareTitle": ["Let's tap tap to crush the sweet sugars, it's funny!"]
+    },
+    "wechat": {
+        "appid": "wx110197cdcb917a1a",
+        "video": "adunit-422de04523781ca3",
+        "banner": "adunit-79149bb2f5378d7d",
+        "shareImg": "https://lottery.etdogs.com/miniGameMaster/config/physicBall.jpg",
+        "shareTitle": ["足球弹出美妙的音乐，快来一起玩吧！"],
+        "resUrl": "https://lottery.etdogs.com/wechat/physicBall2"
+    }
+}
