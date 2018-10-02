@@ -41,6 +41,13 @@ Home
 ====
 http://flax.longames.com
 
+CLI tool -- iflax (need node.js)
+====
+install: npm install iflax -g
+create new project: iflax create simpleGame
+publish the project: iflax publish -p web/ios/android/fb/wechat -m true/false
+
+
  
 
  
