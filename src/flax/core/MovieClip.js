@@ -335,6 +335,10 @@ flax._movieClip = {
                     //hadle the label text
                     if(childDefine.text != null){
                         child = flax.createLabel(this.assetsFile, frameData, childDefine);
+                        if(child.__isTTF) {
+                            var txt = flax.language.getStr(childName);
+                            if(txt) child.text = txt;
+                        }
                         child.name = childName;
                     }else{
                         child = flax.assetsManager.createDisplay(childDefine.assetsFile || this.assetsFile, childDefine["class"], {name: childName, _isLanguageElement: childDefine._isLanguageElement}, this.createChildFromPool);

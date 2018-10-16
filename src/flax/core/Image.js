@@ -15,6 +15,7 @@ flax._image = {
     _sy:1.0,
     _theSize:null,
     _destroyed:false,
+    _firstImg: null,
 
     ctor:function(assetsFileOrUrl, assetID) {
         if(this instanceof flax.Sprite) this._super();
@@ -77,6 +78,10 @@ flax._image = {
 
         var self = this;
         if(flax.isImageFile(imgFile)) {
+            if(!self._firstImg) {
+                self._firstImg = imgFile;
+            }
+            self._imgFile = imgFile;
             var imgRes = flax.loader.getRes(imgFile);
             if(imgRes) {
                 this.onImgLoaded(imgFile);
@@ -100,11 +105,17 @@ flax._image = {
         var res = flax.loader.getRes(imgFile);
         if(!res) return;
 
-        this.texture = res.texture;
+        if(this._firstImg == imgFile)
+        {
+            this._theSize = flax.p(res.texture.width, res.texture.height);
+        }
+
+        if(this._imgFile == imgFile)
+            this.texture = res.texture;
 
         this._updateSize();
 
-        this._imgFile = imgFile;
+        //this._imgFile = imgFile;
     },
     destroy:function()
     {
@@ -220,12 +231,13 @@ flax._image = {
     //},
     _updateSize:function()
     {
-        //if(this._theSize == null) return;
+        if(this._theSize == null) return;
         //this.width = this._theSize.x * sx;
         //this.height = this._theSize.y * sy;
-        if (!this._theSize) {
-            this._theSize = flax.p(this.texture.width, this.texture.height);
-        } else {
+        // if (!this._theSize) {
+        //     this._theSize = flax.p(this.texture.width, this.texture.height);
+        // } else
+        {
             this.setScale(this._theSize.x / this.texture.width, this._theSize.y / this.texture.height)
         }
     },

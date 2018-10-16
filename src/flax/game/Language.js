@@ -44,8 +44,9 @@ flax.language = {
             return null;
         }
         var str = this._dict[key];
-        if(str == null) console.log("Warning: there is no language string for key: " + key);
-        else if(params){
+        if(str == null) {
+            //console.log("Warning: there is no language string for key: " + key);
+        } else if(params){
             for(var key in params){
                 var rk = "{" + key + "}";
                 str = str.replace(new RegExp(rk, 'g'), params[key]);
