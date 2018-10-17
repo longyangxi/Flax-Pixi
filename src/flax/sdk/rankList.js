@@ -16,10 +16,13 @@ var rankList = flax.MovieClip.extend({
     isGroup: false,
     ticket: "",                              //如果是群排行榜，shareTicket
     plat: "web",
+    theTexture: null,
     //构造器
     onEnter: function () {
         this._super();
+
         this.plat = flax.game.config.platform;
+
         this.initView();
         if(this.bg) this.bg.interactive = true;
         this.setScale(flax.stageRect.width / 750);
@@ -71,9 +74,10 @@ var rankList = flax.MovieClip.extend({
             rankItem['nickNameUser'].visible = true;
             rankItem['scoreUser'].visible = true;
             rankItem['rankUser']['value'].text = entries[userIndex].getRank();
+            rankItem['rankUser']['value'].setColor("#66FF00");
             rankItem['iconUser'].setSource(entries[userIndex].getPlayer().getPhoto());
-            rankItem['iconUser'].width = 64;
-            rankItem['iconUser'].height = 64;
+            rankItem['iconUser'].width = 80;
+            rankItem['iconUser'].height = 80;
             rankItem['nickNameUser']['value'].text = entries[userIndex].getPlayer().getName();
             rankItem['scoreUser']['value'].text = entries[userIndex].getScore();
         }
@@ -93,8 +97,8 @@ var rankList = flax.MovieClip.extend({
             rankItem["rank" + i].visible = true;
             rankItem["rank" + i]['value'].text = pageItem[i].getRank();
             rankItem["icon" + i].setSource(player.getPhoto());
-            rankItem["icon" + i].width = 64;
-            rankItem["icon" + i].height = 64;
+            rankItem["icon" + i].width = 80;
+            rankItem["icon" + i].height = 80;
             rankItem["icon" + i].visible = true;
             rankItem["nickName" + i].visible = true;
             rankItem["nickName" + i]['value'].text = player.getName();
@@ -116,7 +120,7 @@ var rankList = flax.MovieClip.extend({
         item['nickNameUser'].visible = false;
         item['scoreUser'].visible = false;
         if(this.plat == "fb"){
-            item['groupBtn'].visible = false;
+            if(item["groupBtn"])  item['groupBtn'].visible = false;
         }
     },
     //设置监听器
@@ -150,7 +154,7 @@ var rankList = flax.MovieClip.extend({
             self.nextPage();
         }, InputType.click);
 
-        flax.addListener(item['groupBtn'], function () {
+        if(item["groupBtn"])flax.addListener(item['groupBtn'], function () {
             var self = this;
             wechat.shareGroup(function() {
                 self.destroy();
@@ -173,7 +177,7 @@ var rankList = flax.MovieClip.extend({
         var scorePosUser = item["scoreUser"].position.x + "-" + item["scoreUser"].position.y;
 
         var itemWidth = 600;
-        var itemHeight = 80;
+        var itemHeight = 100;
         if(item['backItem']) {
             //背景条框的宽和高
             itemHeight = item["backItem"].height;
@@ -214,8 +218,10 @@ var rankList = flax.MovieClip.extend({
         this.scheduleUpdate();
     },
     update: function () {
+        if(this.theTexture) this.theTexture.destroy(true);
         var btexture = new PIXI.BaseTexture(wechat.sharedCanvas);
         this.sprite.texture = new PIXI.Texture(btexture);
+        this.theTexture = this.sprite.texture;
     },
     //下一页
     nextPage: function () {
@@ -254,6 +260,7 @@ var rankList = flax.MovieClip.extend({
 window["rankList"] = rankList;
 
 rankList.show = function(isFromRankLittle, isGroup) {
+
     var rank =  flax.createDisplay(RANK_LIST_JSON, "a38",{isFromRankLittle: isFromRankLittle, isGroup: isGroup}, false, "rankList");
     flax.currentScene.addChild(rank);
     // var rank = new rankList(key,isFromRankLittle,isGroup);
@@ -267,6 +274,7 @@ var rankListLittle = flax.MovieClip.extend({
     score: 0,
     sprite: null,
     entries:null,
+    theTexture: null,
     onEnter: function () {
         this._super();
         this.initView();
@@ -332,11 +340,16 @@ var rankListLittle = flax.MovieClip.extend({
             littleRankItem['nickName' + (1+i)].visible = true;
             littleRankItem['score' + (1+i)].visible = true;
             littleRankItem['rank' + (1+i)]['value'].text = pageItem[i].getRank();
+
+            littleRankItem['rank' + (1+i)]['value'].setColor("#000000") ;
             littleRankItem['icon' + (1+i)].setSource(player.getPhoto());
             littleRankItem['icon' + (1+i)].width = 64;
             littleRankItem['icon' + (1+i)].height = 64;
             littleRankItem['nickName' + (1+i)]['value'].text = player.getName();
+            littleRankItem['nickName' + (1+i)]['value'].color = "#000000";
             littleRankItem['score' + (1+i)]['value'].text = pageItem[i].getScore();
+            littleRankItem['score' + (1+i)]['value'].color = "#000000";
+            console.log(littleRankItem['rank' + (1+i)]['value'].color);
         }
     },
     onExit: function () {
@@ -399,8 +412,10 @@ var rankListLittle = flax.MovieClip.extend({
         this.scheduleUpdate();
     },
     update: function () {
+        if(this.theTexture) this.theTexture.destroy(true);
         var btexture = new PIXI.BaseTexture(wechat.sharedCanvas);
         this.sprite.texture = new PIXI.Texture(btexture);
+        this.theTexture = this.sprite.texture;
     }
 });
 window["rankListLittle"] = rankListLittle;
