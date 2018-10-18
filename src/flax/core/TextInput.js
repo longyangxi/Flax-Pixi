@@ -29,7 +29,6 @@ function PixiTextInput(text, style, password, useNativeTextInput) {
         text = "";
 
     text = text.toString();
-
     if (style && style.wordWrap)
         throw "wordWrap is not supported for input fields";
 
@@ -213,19 +212,15 @@ PixiTextInput.prototype.onKeyEvent = function(e) {
             this.deleteSelectedText();
             this.moveCarretRight();
         }
-
-        this._text =
-            this._text.substring(0, this._caretIndex) +
-            String.fromCharCode(e.charCode) +
-            this._text.substring(this._caretIndex);
-
+        var str = this._text;
+        this._text =str.substring(0, this._caretIndex) +String.fromCharCode(e.charCode) + str.substr(this._caretIndex);
+        str = null;
         this._selection = false;
         this.syncValue();
-
         this._caretIndex++;
         this.ensureCaretInView();
         this.showCaret();
-        this.updateText();
+        this.updateText(false);
         this.drawElements();
         this.trigger(this.keypress, e);
         this.trigger(this.change);
@@ -577,7 +572,9 @@ PixiTextInput.prototype.updateCaretPosition = function() {
 PixiTextInput.prototype.updateText = function(dispatchEvt) {
     this.textField.text = this._text = this._value;//.substring(this.scrollIndex);
     // if(this._nativeTextInput) this._nativeTextInput.value = this.textField.text;
-    if(this.onChange && dispatchEvt !== false) this.onChange.dispatch(this.textField.text);
+    if(this.onChange && dispatchEvt !== false) {
+      this.onChange.dispatch(this.textField.text);
+    }
 }
 
 /**
