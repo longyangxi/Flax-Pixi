@@ -107,7 +107,7 @@ flax._image = {
 
         if(this._firstImg == imgFile)
         {
-            this._theSize = flax.p(res.texture.width, res.texture.height);
+            this._theSize = flax.p(res.texture.width * this.scale.x, res.texture.height * this.scale.y);
         }
 
         if(this._imgFile == imgFile)
