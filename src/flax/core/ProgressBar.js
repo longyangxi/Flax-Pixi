@@ -104,6 +104,13 @@ flax.ProgressBar = flax.Animator.extend({
         }
         this.setPercentage(p);
     },
+    /**
+     * Override pixi's getBounds
+     * */
+    getBounds:function(coordinate){
+        var mCol = this.mainCollider;
+        return mCol.getBounds(coordinate);
+    },
     _updateBar:function()
     {
         if(!this.running) return;
@@ -111,7 +118,7 @@ flax.ProgressBar = flax.Animator.extend({
         var isRadial = this._type == flax.ProgressBarType.RADIAL;
         var isHorizontal = this._type == flax.ProgressBarType.HORIZONTAL;
 
-        var bounds = this.getBounds();
+        var bounds = this.getBounds(this.parent);
 
         if(!this._bar || this._needRedraw) {
             isRadial ? this._drawCircleBar(bounds) : this._drawRectBar(isHorizontal, bounds);
