@@ -85,14 +85,14 @@ var wechat = {
     },
     getSetting:function(){
         wx.getSetting({
-            success: (response) => {
-                console.log(response)
-                console.log(flax.userData.userToken);
+            success: function(response){
+                //console.log(response)
+                //console.log(flax.userData.userToken);
 
                 if (!response.authSetting['scope.userInfo']) {
                     wx.authorize({
                         scope: 'scope.userInfo',
-                        success: (response) => {
+                        success: function(response){
 
                             wx.getUserInfo({
                                 success: function (res) {
