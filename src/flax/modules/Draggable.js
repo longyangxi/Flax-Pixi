@@ -66,7 +66,7 @@ flax.Module.Draggable = {
     _startDrag: function(event) {
         if (!this.dragEnabled) return;
         this._inDragging = true;
-        this._lastPos = flax.mousePos;
+        this._lastPos = flax.getMousePos(event);
         if (this.onStartDrag) this.onStartDrag();
         this._stopTween();
     },
@@ -74,7 +74,7 @@ flax.Module.Draggable = {
 
         if (!this._inDragging) return;
 
-        var newPos = flax.mousePos;
+        var newPos = flax.getMousePos(event);
         var deltaX = newPos.x - this._lastPos.x;
         var deltaY = newPos.y - this._lastPos.y;
 
