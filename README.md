@@ -44,8 +44,13 @@ http://flax.longames.com
 CLI tool -- iflax (need node.js)
 ====
 1. install: npm install iflax -g
+Install iflax
 2. create new project: iflax create simpleGame
+Create a new HTML5 game named simpleGame based on Flax and Pixi.js
 3. publish the project: iflax publish -p <web/ios/android/fb/wechat> -m <true/false>
+Publish current game to various platforms: web, ios, android, facebook instant game, wechat mini game.
+When choose ios or android platform, the output project will be based on Cordova.
+
 
 
  
