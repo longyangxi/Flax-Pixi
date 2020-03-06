@@ -36,7 +36,7 @@ flax.SpriteFrameCache = flax.Class.extend({
     },
     _createSpriteFrames: function(file, dict, texture) {
         var frames = dict["frames"];
-        var meta = dict['metadata'];
+        var meta = dict['metadata'] || dict['meta'];
 
         if(!frames) throw "Invalid sprite frames file!";
 

@@ -314,14 +314,14 @@ flax.AssetsManager = flax.Class.extend({
             return this._addFromOriginPlist(assetsFile1);
         }
 
-        this.metaCache[assetsFile] = dict['metadata'];
+        this.metaCache[assetsFile] = dict['metadata'] || dict['meta'];
         //the min tool version this API needed
         var toolVersion = this.getToolVersion(assetsFile);
         if(!toolVersion || toolVersion < MIN_TOOL_VERSION){
             throw "The resource: " + assetsFile + " was exported with the old version of Flax, please do it with current version!";
         }
         //get the fps from flash
-        var fps = dict["metadata"]["fps"];
+        var fps = this.metaCache[assetsFile]["fps"];
 
         flax.spriteFrameCache.addSpriteFrames(assetsFile1);
         //Note: the plist will be released by cocos when addSpriteFrames
